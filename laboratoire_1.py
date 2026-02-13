@@ -29,7 +29,7 @@ def exercice_2_decorrelation():
     # -------------------------------------------------------------------------
     # Utilisez la fonction appropriée pour calculer les valeurs propres et vecteurs propres
     # À la place des vecteurs et valeurs propres nulles ci-dessous
-    eigenvalues, eigenvectors = numpy.zeros(3), numpy.zeros((3, 3))
+    eigenvalues, eigenvectors = numpy.linalg.eig(covariance)
 
     print("Exercice 2.1: Calcul des valeurs propres et vecteurs propres")
     viz.print_gaussian_model(mean, covariance, eigenvalues, eigenvectors)
@@ -47,16 +47,27 @@ def exercice_2_decorrelation():
 
     # L1.E2.5 Projetez la représentation des données sur la première composante principale
     # -------------------------------------------------------------------------
-    first_principal_component = numpy.zeros((3, 1))                                             # Sélectionnez la première composante principale
+    indice_sorted = numpy.argsort(eigenvalues)[::-1]               # Indices pour trier les valeurs propres par ordre décroissant
+    eigenvectors = eigenvectors[:, indice_sorted]                  # Trier les vecteurs propres en fonction
+
+    first_principal_component = eigenvectors[:, 0].reshape(3, 1)                                             # Sélectionnez la première composante principale
     decorrelated_samples = analysis.project_onto_new_basis(samples, first_principal_component)  # Complétez la fonction project_onto_new_basis dans analysis.py
 
     representation = dataset.Representation(data=decorrelated_samples, labels=numpy.array(["Data"] * decorrelated_samples.shape[0]))
-    viz.plot_pdf(representation, n_bins=10, title="Projection des données sur la 1er composante")
+    #viz.plot_pdf(representation, n_bins=10, title="Projection des données sur la 1er composante")
+    plt.figure()
+    histogram, bin_edges = numpy.histogram(decorrelated_samples, bins=30, density=True)
+    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+    plt.bar(bin_centers, histogram, width=bin_edges[1] - bin_edges[0], alpha=0.6, color='g', label='Données projetées')
+    plt.title("Projection des données sur la 1ère composante principale")
+    plt.xlabel("Valeur projetée")
+    plt.ylabel("Densité de probabilité")
+    plt.legend()
     # -------------------------------------------------------------------------
 
     # L1.E2.6 Projetez la représentation des données sur les 2e et 3e composantes principales
     # -------------------------------------------------------------------------
-    e23 = numpy.zeros((3, 2))                                       # Sélectionnez la 2e et 3e composante principale
+    e23 = eigenvectors[:, 1:3]                                       # Sélectionnez la 2e et 3e composante principale
     reduced_samples = analysis.project_onto_new_basis(samples, e23) # Projetez les données sur les 2e et 3e composantes principales
 
     projected_covariance = numpy.zeros((2,2))                                           # Utilisez la fonction appropriée pour calculer la matrice de covariance des données projetées
@@ -234,8 +245,8 @@ def main():
     # pylint: disable = using-constant-test, multiple-statements
 
     if True: exercice_2_decorrelation()
-    if True: exercice_3_visualisation_representation()
-    if True: exercice_4_choix_representation()
+    if False: exercice_3_visualisation_representation()
+    if False: exercice_4_choix_representation()
 
 
 if __name__ == "__main__":
