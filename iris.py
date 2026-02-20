@@ -92,7 +92,7 @@ def main():
     # L2.E3.1 Observez si différentes combinaisons de dimensions sont discriminantes.
     # -------------------------------------------------------------------------
     # dimension 0, 1, 2
-    representation = dataset.Representation(data=data[:, [0, 1, 2]], labels=labels)
+    representation = dataset.Representation(data=data[:, [0, 1, 3]], labels=labels)
     viz.plot_data_distribution(representation, title="Représentation 3D des fleurs d'iris (dim 1, 2, 3)", xlabel="Caractéristique 1", ylabel="Caractéristique 2", zlabel="Caractéristique 3")
 
     # dimension i, j, k
@@ -144,17 +144,17 @@ def main():
 
     # L2.E3.3 Créez un ensemble d'entraînement et de validation à partir des données préparées.
     # -------------------------------------------------------------------------
-    train_data = scaled_data
-    val_data = []
-    train_labels = labels_one_hot
-    val_labels = []
+    # create training and validation sets (80% train, 20% validation)
+    train_data, val_data, train_labels, val_labels = sklearn.model_selection.train_test_split(
+        scaled_data, labels_one_hot, test_size=0.2, random_state=42
+    )
     # -------------------------------------------------------------------------
 
     # L2.E3.4 Testez plusieurs configurations de réseaux de neurones et de fonction d'activation.
     # -------------------------------------------------------------------------
     model = keras.models.Sequential()
     model.add(keras.layers.InputLayer(input_shape=(scaled_data.shape[-1],)))
-    model.add(keras.layers.Dense(units=3, activation="linear"))
+    model.add(keras.layers.Dense(units=6, activation="linear"))
     model.add(keras.layers.Dense(units=labels_one_hot.shape[-1], activation="linear"))
     print(model.summary())
     # -------------------------------------------------------------------------
@@ -177,8 +177,10 @@ def main():
     history: keras.callbacks.History = model.fit(
         train_data, train_labels,
         batch_size=16,
+        validation_data=(val_data, val_labels),
+        validation_split=0.2,
         shuffle=True,
-        epochs=10,
+        epochs=1000,
         callbacks=callbacks,
         verbose=True
     )
