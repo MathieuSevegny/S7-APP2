@@ -24,6 +24,7 @@ def problematique():
     images = dataset.ImageDataset("data/image_dataset/")
     
     noise_feature = calculate_noise(images).reshape(-1, 1)
+
     colors_top_left = calculate_most_common_color_in_top_left_corner(images).reshape(-1, 3)
     
     features = np.hstack((noise_feature, colors_top_left))
@@ -40,7 +41,15 @@ def problematique():
     # -------------------------------------------------------------------------
     # 
     # -------------------------------------------------------------------------
-    if False:
+    if True:
+        noise_representation = dataset.Representation(data=noise_feature, labels=images.labels)
+        viz.plot_features_distribution(noise_representation, 
+                                   title="Distribution du bruit", 
+                                   xlabel="Bruit", 
+                                   ylabel="Fréquence",
+                                   n_bins=32,
+                                   features_names=["Bruit"])
+        
         subrepresentation = dataset.Representation(data=features[:,0:2], labels=images.labels)
         viz.plot_data_distribution(subrepresentation,
                             title="Distribution basée sur le bruit",
@@ -57,13 +66,13 @@ def problematique():
     # Complétez la classe NeuralNetworkClassifier dans helpers/classifier.py
     # -------------------------------------------------------------------------
 
-    if True:
+    if False:
         nn_classifier = classifier.NeuralNetworkClassifier(input_dim=representation.data.shape[-1],
                                                         output_dim=len(representation.unique_labels),
                                                         n_hidden=3,
                                                         n_neurons=8,
                                                         lr=0.01,
-                                                        n_epochs=10,
+                                                        n_epochs=50,
                                                         batch_size=16)
         # -------------------------------------------------------------------------
         nn_classifier.fit(representation)
