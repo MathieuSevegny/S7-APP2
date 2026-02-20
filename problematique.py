@@ -2,6 +2,9 @@
 import os
 import pathlib
 
+import utils
+
+
 # Must be call before any other TensorFlow/Keras import
 # Suppress oneDNN custom operations info
 # Suppress INFO and WARNING messages from TF (0=all, 1=no INFO, 2=no INFO/WARN, 3=no error)
@@ -9,8 +12,9 @@ os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 from matplotlib import pyplot as plt
+import sklearn
 
-from helpers import classifier, viz
+from helpers import analysis, classifier, viz
 import helpers.dataset as dataset
 from features import *
 
@@ -18,15 +22,11 @@ from features import *
 
 def problematique():
     images = dataset.ImageDataset("data/image_dataset/")
-
+    
     noise_feature = calculate_noise(images).reshape(-1, 1)
     colors_top_left = calculate_most_common_color_in_top_left_corner(images).reshape(-1, 3)
     
     features = np.hstack((noise_feature, colors_top_left))
-    
-    # normalize each feature to [-1, 1]
-    for i in range(features.shape[1]):
-        features[:, i] = (features[:, i] - np.min(features[:, i])) / (np.max(features[:, i]) - np.min(features[:, i])) * 2 - 1
     
     print("Features shape:", features.shape)    
 
@@ -58,12 +58,12 @@ def problematique():
     # -------------------------------------------------------------------------
 
     if True:
-        nn_classifier = classifier.NeuralNetworkClassifier(input_dim=representation.data.shape[1],
+        nn_classifier = classifier.NeuralNetworkClassifier(input_dim=representation.data.shape[-1],
                                                         output_dim=len(representation.unique_labels),
                                                         n_hidden=3,
                                                         n_neurons=8,
                                                         lr=0.01,
-                                                        n_epochs=1000,
+                                                        n_epochs=10,
                                                         batch_size=16)
         # -------------------------------------------------------------------------
         nn_classifier.fit(representation)
@@ -73,6 +73,19 @@ def problematique():
 
         # Plot training metrics
         viz.plot_metric_history(nn_classifier.history)
+        
+        data = nn_classifier.preprocess_data(representation.data)
+        
+        prediction = nn_classifier.predict(data)
+        
+        predictions_labels = utils.labels_from_one_hot(prediction, representation.unique_labels)
+
+        error_rate, indexes_errors = analysis.compute_error_rate(representation.labels, predictions_labels)
+        print(f"\n\n{len(indexes_errors)} erreurs de classification sur {len(predictions_labels)} échantillons ({error_rate * 100:.2f}%).")
+
+        viz.show_confusion_matrix(representation.labels, predictions_labels, representation.unique_labels, plot=True)
+        
+        plt.show()
 
 if __name__ == "__main__":
     problematique()

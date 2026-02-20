@@ -9,6 +9,8 @@ import sklearn.model_selection
 import sklearn.neighbors
 import sklearn.preprocessing
 
+import utils
+
 from . import (
     analysis,
     dataset
@@ -315,7 +317,7 @@ class NeuralNetworkClassifier(Classifier):
         self.model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=self.lr),
             loss=keras.losses.MeanSquaredError(),
-            metrics=[]
+            metrics=["accuracy"]
         )
         # -------------------------------------------------------------------------
 
@@ -352,16 +354,15 @@ class NeuralNetworkClassifier(Classifier):
         # pour l'entraînement d'un classificateur.
         # -------------------------------------------------------------------------
         # Utiliser OneHotEncoder de sklearn à la place de cette ligne
-        one_hot_labels = numpy.zeros((representation.labels.shape[0], len(representation.unique_labels)))
+        labels_one_hot = utils.one_hot_for_labels(representation.labels, representation.unique_labels)
         # -------------------------------------------------------------------------
 
         # L2.E4.2 Partitionnez les données en sous-ensemble d'entraînement et de validation.
         # -------------------------------------------------------------------------
         # Prepare datasets
-        train_data = representation.data
-        val_data = []
-        train_labels = one_hot_labels
-        val_labels = []
+        train_data, val_data, train_labels, val_labels = sklearn.model_selection.train_test_split(
+            representation.data, labels_one_hot, test_size=0.2, random_state=42
+        )
         # -------------------------------------------------------------------------
 
         return train_data, val_data, train_labels, val_labels
@@ -386,11 +387,11 @@ class NeuralNetworkClassifier(Classifier):
 
         self.history = self.model.fit(
             train_data, train_labels,
-            # validation_data=(val_data, val_labels), # TODO: Décommenter si un ensemble de validation est utilisé
+            validation_data=(val_data, val_labels), # TODO: Décommenter si un ensemble de validation est utilisé
             batch_size=self.batch_size,
             epochs=self.n_epochs,
             callbacks=callbacks,
-            verbose=False
+            verbose=True
         )
         # -------------------------------------------------------------------------
 
