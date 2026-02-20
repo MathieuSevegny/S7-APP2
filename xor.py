@@ -67,6 +67,8 @@ def main():
                           [1],
                           [1],
                           [0]])
+    
+    keras.utils.set_random_seed(42)
 
     # Plotting the XOR dataset
     plt.figure(figsize=(4, 4))
@@ -92,18 +94,20 @@ def main():
     # (fonction de perte, optimiseur, taux d'apprentissage, etc.)
     # -------------------------------------------------------------------------
     model.compile(
-        optimizer=keras.optimizers.SGD(learning_rate=0.5, momentum=0.9),
+        optimizer=keras.optimizers.SGD(learning_rate=0.4, momentum=0.9),
         loss=keras.losses.MeanSquaredError(),
         metrics=None
     )
     # -------------------------------------------------------------------------
+    
+    data = data * 2 - 1  # Scale data to [-1, 1] for better training performance
 
     # Train the model
     history: keras.callbacks.History = model.fit(
         data, labels,
         batch_size=len(data),
         shuffle=True,
-        epochs=500,
+        epochs=200,
         callbacks=None,
         verbose=True
     )
