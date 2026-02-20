@@ -261,7 +261,7 @@ def exercice_4_choix_representation():
 def main():
     # pylint: disable = using-constant-test, multiple-statements
 
-    # if True: exercice_2_decorrelation()
+    if True: exercice_2_decorrelation()
     if True: exercice_3_visualisation_representation()
     if True: exercice_4_choix_representation()
 
