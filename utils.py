@@ -11,12 +11,3 @@ def one_hot_for_labels(labels:np.ndarray, unique_labels:list) -> np.ndarray:
         labels_one_hot[i, label_index] = 1
     
     return labels_one_hot
-
-def labels_from_one_hot(one_hot_labels:np.ndarray, unique_labels:list) -> np.ndarray:
-    index_to_label_name = {index: label for index, label in enumerate(unique_labels)}
-    labels = np.zeros(one_hot_labels.shape[0], dtype=object)
-
-    for i, one_hot in enumerate(one_hot_labels):
-        labels[i] = index_to_label_name[one_hot]
-    
-    return labels

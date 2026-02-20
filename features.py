@@ -52,3 +52,25 @@ def calculate_most_common_color_in_top_left_corner(rgb_images_data:Dataset) -> n
         most_common_color = unique_colors[np.argmax(counts)]
         most_common_colors[i] = most_common_color
     return most_common_colors
+
+def calculate_ratio_high_low_frequency(rgb_images_data:Dataset) -> np.ndarray:
+    """
+    Calculate ratio of high and low frequency from the vertical.
+    
+    Args:
+        rgb_images_data (np.ndarray): A 4D array of shape (num_images, height, width, 3) containing RGB pixel values.
+    Returns:
+        np.ndarray: A 1D array of shape (num_images,) containing the ratio of high-frequency to low-frequency components for each image.
+    """
+    ratios = np.zeros(len(rgb_images_data))
+    for i, (image, _) in enumerate(rgb_images_data):
+        grayscale_image = np.mean(image, axis=2)  # Convert to grayscale by averaging the RGB channels
+        fft_image = np.fft.fft2(grayscale_image)
+        fft_shifted = np.fft.fftshift(fft_image)
+
+        magnitude_spectrum = np.abs(fft_shifted)
+        low_freq = np.mean(magnitude_spectrum[:grayscale_image.shape[0]//2, :])
+        high_freq = np.mean(magnitude_spectrum[grayscale_image.shape[0]//2:, :])
+        ratios[i] = high_freq / (low_freq + 1e-8)  # Avoid division by zero
+        
+    return ratios
