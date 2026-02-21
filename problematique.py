@@ -45,7 +45,7 @@ def problematique():
     # -------------------------------------------------------------------------
     # 
     # -------------------------------------------------------------------------
-    if False:
+    if True:
         noise_representation = dataset.Representation(data=noise_feature, labels=images.labels)
         viz.plot_features_distribution(noise_representation, 
                                    title="Distribution du bruit", 
@@ -109,7 +109,7 @@ def problematique():
                                                         n_hidden=3,
                                                         n_neurons=8,
                                                         lr=0.01,
-                                                        n_epochs=100,
+                                                        n_epochs=70,
                                                         batch_size=16)
         # -------------------------------------------------------------------------
         nn_classifier.fit(representation)
