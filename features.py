@@ -18,7 +18,7 @@ def calculate_noise(rgb_images_data:Dataset) -> np.ndarray:
     """
     noise_levels = np.zeros(len(rgb_images_data))
     for i, (image, _) in enumerate(rgb_images_data):
-        grayscale_image = np.mean(image, axis=-1)  # Convert to grayscale by averaging the RGB channels
+        grayscale_image = np.mean(image, axis=-1)
         fft_image = np.fft.fft2(grayscale_image)
         fft_shifted = np.fft.fftshift(fft_image)
         magnitude_spectrum = np.abs(fft_shifted)
@@ -37,7 +37,7 @@ def calculate_contrast(rgb_images_data:Dataset) -> np.ndarray:
     """
     contrast_levels = np.zeros(len(rgb_images_data))
     for i, (image, _) in enumerate(rgb_images_data):
-        grayscale_image = np.mean(image, axis=-1)  # Convert to grayscale by averaging the RGB channels
+        grayscale_image = np.mean(image, axis=-1)
         contrast_levels[i] = np.max(grayscale_image) - np.min(grayscale_image)
     return contrast_levels
 
@@ -70,7 +70,7 @@ def calculate_ratio_high_low_frequency(rgb_images_data:Dataset) -> np.ndarray:
     """
     ratios = np.zeros(len(rgb_images_data))
     for i, (image, _) in enumerate(rgb_images_data):
-        grayscale_image = np.mean(image, axis=-1)  # Convert to grayscale by averaging the RGB channels
+        grayscale_image = np.mean(image, axis=-1)
         fft_image = np.fft.fft2(grayscale_image)
         fft_shifted = np.fft.fftshift(fft_image)
         magnitude_spectrum = np.abs(fft_shifted)
@@ -90,7 +90,7 @@ def vertical_horizontal_ratio(rgb_images_data:Dataset) -> np.ndarray:
     """
     ratios = np.zeros(len(rgb_images_data))
     for i, (image, _) in enumerate(rgb_images_data):
-        grayscale_image = np.mean(image, axis=-1)  # Convert to grayscale by averaging the RGB channels
+        grayscale_image = np.mean(image, axis=-1)
         edges = sobel(grayscale_image)
         vertical_edges = np.sum(np.abs(edges[:, :-1] - edges[:, 1:]))  # Vertical edge strength
         horizontal_edges = np.sum(np.abs(edges[:-1, :] - edges[1:, :]))  # Horizontal edge strength
