@@ -128,7 +128,7 @@ def etape3_classificateur_bayesien(representation: dataset.Representation, featu
         viz.show_confusion_matrix(representation.labels, predictions_labels, representation.unique_labels, plot=True, title="Matrice de confusion du classificateur Bayésien")
     print("\n")
     
-    impacts, feature_names_impact = utils.get_impact_each_features_pred(bayes, representation.data, representation.labels, representation.unique_labels, feature_names)
+    utils.get_impact_each_features_pred(bayes, representation.data, representation.labels, representation.unique_labels, feature_names)
     return error_rate
 
 
@@ -142,7 +142,7 @@ def etape4_classificateur_knn(representation: dataset.Representation, feature_na
     if show_plots:
         viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=True, title="Matrice de confusion du classificateur KNN")
     print("\n")
-    impacts, feature_names_impact = utils.get_impact_each_features_pred(knn, representation.data, representation.labels, representation.unique_labels, feature_names)
+    utils.get_impact_each_features_pred(knn, representation.data, representation.labels, representation.unique_labels, feature_names)
     return error_rate
 
        
@@ -180,7 +180,7 @@ def etape5_classificateur_rna(representation: dataset.Representation, show_plots
     if show_plots:
         viz.show_confusion_matrix(representation.labels, predictions_labels, representation.unique_labels, plot=True, title="Matrice de confusion du classificateur RNA")
     print("\n")
-    impacts, feature_names_impact = utils.get_impact_each_features_pred(nn_classifier, representation.data, representation.labels, representation.unique_labels)
+    utils.get_impact_each_features_pred(nn_classifier, representation.data, representation.labels, representation.unique_labels, feature_names)
     return error_rate, nn_classifier
 
 def etape6_discussion_et_justifications(resultats: dict, show_plots: bool = True):
