@@ -30,8 +30,8 @@ def problematique():
     colors_top_left = calculate_most_common_color_in_top_left_corner(images).reshape(-1, 3)
     ratio_high_low = vertical_horizontal_ratio(images).reshape(-1, 1)
     symmetry = calculate_ratio_symmetry(images).reshape(-1, 1)
-    lab_spikes_width = calculate_lab_spikes_width(images).reshape(-1, 1)
-    features = np.hstack((noise_feature, colors_top_left, symmetry, ratio_high_low, lab_spikes_width))
+    number_lab_b_peaks = calculate_lab_b_peaks(images).reshape(-1, 1)
+    features = np.hstack((noise_feature, colors_top_left, symmetry, ratio_high_low, number_lab_b_peaks))
     
     print("Features shape:", features.shape)    
 
@@ -78,13 +78,13 @@ def problematique():
                                    n_bins=32,
                                    features_names=["Ratio de symétrie"])
         
-        spickes_representation = dataset.Representation(data=lab_spikes_width, labels=images.labels)
+        spickes_representation = dataset.Representation(data=number_lab_b_peaks, labels=images.labels)
         viz.plot_features_distribution(spickes_representation, 
-                                   title="Distribution de la largeur des pics dans l'espace Lab", 
-                                   xlabel="Largeur des pics", 
+                                   title="Distribution du nombre de pics dans le canal b du Lab", 
+                                   xlabel="Nombre de pics dans le canal b du Lab", 
                                    ylabel="Nombre d'images",
                                    n_bins=32,
-                                   features_names=["Largeur des pics"])
+                                   features_names=["Nombre de pics dans le canal b du Lab"])
         
         subrepresentation = dataset.Representation(data=features[:, 0:3], labels=images.labels)
         viz.plot_data_distribution(subrepresentation,
