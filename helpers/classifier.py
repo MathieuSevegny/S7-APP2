@@ -361,7 +361,7 @@ class NeuralNetworkClassifier(Classifier):
         # -------------------------------------------------------------------------
         # Prepare datasets
         train_data, val_data, train_labels, val_labels = sklearn.model_selection.train_test_split(
-            representation.data, labels_one_hot, test_size=0.2, random_state=42
+            representation.data, labels_one_hot, test_size=0.4, random_state=42
         )
         # -------------------------------------------------------------------------
 

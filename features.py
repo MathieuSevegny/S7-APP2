@@ -1,8 +1,11 @@
 from matplotlib import pyplot as plt
 import numpy as np
+import skimage
 from skimage.filters import sobel
 
+from helpers import analysis
 from helpers.dataset import Dataset
+from scipy.signal import find_peaks
 
 def calculate_noise(rgb_images_data:Dataset) -> np.ndarray:
     """
@@ -26,7 +29,8 @@ def calculate_noise(rgb_images_data:Dataset) -> np.ndarray:
         #plt.title('Image Grayscale')
         #plt.axis('off')
         #plt.subplot(1, 2, 2)
-        #plt.imshow(np.log(magnitude_spectrum + 1), cmap='gray')
+
+        #plt.imshow(magnitude_spectrum, cmap='gray')
         #plt.title('Magnitude Spectrum (log scale)')
         #plt.axis('off')
         #plt.show()
@@ -119,3 +123,24 @@ def calculate_ratio_symmetry(rgb_images_data:Dataset) -> np.ndarray:
         flipped_image = np.fliplr(grayscale_image)  # Flip the image horizontally
         symmetry_levels[i] = np.sum(np.abs(grayscale_image - flipped_image)) / grayscale_image.size
     return symmetry_levels
+
+def calculate_lab_spikes_width(rgb_images_data:Dataset) -> np.ndarray:
+    """
+    Calculate the width of the spikes in the Lab color space for each image in the dataset.
+
+    Args:
+        rgb_images_data (np.ndarray): A 4D array of shape (num_images, height, width, 3) containing RGB pixel values.
+    Returns:
+        np.ndarray: A 1D array of shape (num_images,) containing the width of the spikes in the Lab color space for each image.
+    """
+    spike_widths = np.zeros(len(rgb_images_data))
+    for i, (image, _) in enumerate(rgb_images_data):
+        # Convert RGB to Lab color space
+        image_lab = skimage.color.rgb2lab(image / 255.0)
+        scaled_lab = analysis.rescale_lab(image_lab, n_bins=256)
+        # Calculate std deviations of the L, a, and b channels
+        peaks_b, _ = find_peaks(scaled_lab[:, :, 2].flatten())
+
+        spike_widths[i] = len(peaks_b)
+
+    return spike_widths

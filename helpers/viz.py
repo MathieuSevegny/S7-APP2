@@ -252,7 +252,8 @@ def plot_data_distribution(representation: dataset.Representation,
                            show_components: bool = False,
                            show_ellipses: bool = False,
                            analytical_boundaries: bool = False,
-                           priors: Optional[numpy.ndarray] = None) -> Tuple[plt.Figure, plt.Axes]:
+                           priors: Optional[numpy.ndarray] = None,
+                           isNormalized: bool = False) -> Tuple[plt.Figure, plt.Axes]:
     """
     Affiche la distribution des données en 2D ou 3D.
 
@@ -288,7 +289,8 @@ def plot_data_distribution(representation: dataset.Representation,
 
     for i, label in enumerate(unique_labels):
         data =  representation.get_class(label)
-
+        if isNormalized:
+            data = analysis.rescale_data(data)
         color = colors[i]
 
         # plot the scatter points
