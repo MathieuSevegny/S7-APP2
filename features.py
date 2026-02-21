@@ -23,17 +23,6 @@ def calculate_noise(rgb_images_data:Dataset) -> np.ndarray:
         fft_shifted = np.fft.fftshift(fft_image)
         magnitude_spectrum = np.abs(fft_shifted)
         noise_levels[i] = np.sum(magnitude_spectrum) / (grayscale_image.size)
-        #plt.figure()
-        #plt.subplot(1, 2, 1)
-        #plt.imshow(grayscale_image, cmap='gray')
-        #plt.title('Image Grayscale')
-        #plt.axis('off')
-        #plt.subplot(1, 2, 2)
-
-        #plt.imshow(magnitude_spectrum, cmap='gray')
-        #plt.title('Magnitude Spectrum (log scale)')
-        #plt.axis('off')
-        #plt.show()
 
     return noise_levels
 
