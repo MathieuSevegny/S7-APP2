@@ -378,7 +378,7 @@ def plot_metric_history(history: keras.callbacks.History):
 
     fig.tight_layout()
 
-def show_confusion_matrix(target: numpy.ndarray, predictions: numpy.ndarray, class_labels: List[str], plot: bool = True):
+def show_confusion_matrix(target: numpy.ndarray, predictions: numpy.ndarray, class_labels: List[str], plot: bool = True, title: str = "Matrice de confusion"):
     """
     Affiche la matrice de confusion entre les étiquettes cibles et les prédictions.
 
@@ -396,7 +396,7 @@ def show_confusion_matrix(target: numpy.ndarray, predictions: numpy.ndarray, cla
     if not plot:
         return
 
-    fig, ax = _get_axes(figsize=DEFAULT_FIGSIZE, title="Matrice de confusion", xlabel="Prédictions", ylabel="Cibles")
+    fig, ax = _get_axes(figsize=DEFAULT_FIGSIZE, title=title, xlabel="Prédictions", ylabel="Cibles")
 
     ax.imshow(confusion_matrix, cmap="Blues")
     fig.colorbar(ax.images[0], ax=ax)
