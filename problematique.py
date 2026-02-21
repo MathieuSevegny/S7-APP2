@@ -23,7 +23,7 @@ import helpers.dataset as dataset
 from features import *
 
 
-def etape1_representation(images: dataset.ImageDataset, show_plots: bool = True) -> np.ndarray:
+def etape1_representation(images: dataset.ImageDataset, show_plots: bool = False) -> np.ndarray:
     
     print("--- Étape 1 : Représentation ---")
     noise_feature = calculate_noise(images).reshape(-1, 1)
