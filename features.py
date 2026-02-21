@@ -108,7 +108,7 @@ def calculate_ratio_symmetry(rgb_images_data:Dataset) -> np.ndarray:
     """
     symmetry_levels = np.zeros(len(rgb_images_data))
     for i, (image, _) in enumerate(rgb_images_data):
-        grayscale_image = np.mean(image, axis=-1)  # Convert to grayscale by averaging the RGB channels
+        grayscale_image = np.mean(image, axis=-1)
         flipped_image = np.fliplr(grayscale_image)  # Flip the image horizontally
         symmetry_levels[i] = np.mean(np.abs(grayscale_image - flipped_image))
     return symmetry_levels
