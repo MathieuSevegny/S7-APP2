@@ -132,3 +132,10 @@ def calculate_lab_b_peaks(rgb_images_data:Dataset) -> np.ndarray:
         spike_widths[i] = len(peaks_b)
 
     return spike_widths
+
+def calculate_std_dev(images):
+    # Calcule l'écart-type (le contraste) pour les canaux RGB
+    std_features = np.zeros((len(images), 3))
+    for i, (image, _) in enumerate(images):
+        std_features[i] = np.std(image, axis=(0, 1))
+    return std_features
