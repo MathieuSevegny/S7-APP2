@@ -33,7 +33,7 @@ def etape1_representation(images: dataset.ImageDataset, show_plots: bool = False
     number_lab_b_peaks = calculate_lab_b_peaks(images).reshape(-1, 1)
     ecart_type = calculate_std_dev(images).reshape(-1, 3)
     
-    features = np.hstack((noise_feature, colors_top_left, symmetry, ratio_high_low, number_lab_b_peaks, ecart_type))
+    features = np.hstack((noise_feature, colors_top_left,  symmetry, ratio_high_low, number_lab_b_peaks, ecart_type))
     print(f"Features extraites. Shape: {features.shape}\n")
     
     
@@ -104,7 +104,7 @@ def etape2_pretraitement(features: np.ndarray, labels: np.ndarray, show_plots: b
         feature_names = [
             "Bruit", 
             "Coul R", "Coul G", "Coul B", 
-            "Symétrie", 
+            "Symétrie",
             "Ratio Freq", 
             "Pics Lab(b)", 
             "Écart R", "Écart G", "Écart B"
@@ -145,7 +145,7 @@ def etape3_classificateur_bayesien(representation: dataset.Representation, show_
     print(f"Taux d'erreur Bayésien : {error_rate * 100:.2f}%")
     
     if show_plots:
-        viz.show_confusion_matrix(representation.labels, predictions_labels, representation.unique_labels, plot=True)
+        viz.show_confusion_matrix(representation.labels, predictions_labels, representation.unique_labels, plot=True, title="Matrice de confusion du classificateur Bayésien")
     print("\n")
     
     return error_rate
@@ -162,10 +162,11 @@ def etape4_classificateur_knn(representation: dataset.Representation, show_plots
     print(f"Impact de chaque caractéristique sur la performance du KNN : {impacts}")
     print(f"Taux d'erreur KNN : {error_rate * 100:.2f}%")
     if show_plots:
-        viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=True)
+        viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=True, title="Matrice de confusion du classificateur KNN")
     print("\n")
     return error_rate
 
+       
 
 def etape5_classificateur_rna(representation: dataset.Representation, show_plots: bool = True):
     """
@@ -197,7 +198,7 @@ def etape5_classificateur_rna(representation: dataset.Representation, show_plots
     print(f"\n{len(indexes_errors)} erreurs de classification sur {len(predictions)} échantillons ({error_rate * 100:.2f}%).")
     
     if show_plots:
-        viz.show_confusion_matrix(representation.labels, predictions_labels, representation.unique_labels, plot=True)
+        viz.show_confusion_matrix(representation.labels, predictions_labels, representation.unique_labels, plot=True, title="Matrice de confusion du classificateur RNA")
     print("\n")
     return error_rate, nn_classifier
 
