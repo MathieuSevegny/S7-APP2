@@ -22,7 +22,7 @@ def calculate_noise(rgb_images_data:Dataset) -> np.ndarray:
         fft_image = np.fft.fft2(grayscale_image)
         fft_shifted = np.fft.fftshift(fft_image)
         magnitude_spectrum = np.abs(fft_shifted)
-        noise_levels[i] = np.sum(magnitude_spectrum) / (grayscale_image.size)
+        noise_levels[i] = np.mean(magnitude_spectrum)  # Use the mean of the magnitude spectrum as a noise level indicator
 
     return noise_levels
 
