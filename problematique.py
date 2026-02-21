@@ -26,7 +26,6 @@ import copy
 
 
 def etape1_representation(images: dataset.ImageDataset, show_plots: bool = True) -> np.ndarray:
-    
     print("--- Étape 1 : Représentation ---")
     noise_feature = calculate_noise(images).reshape(-1, 1)
     ratio_vertical_horizontal = calculate_ratio_vertical_horizontal(images).reshape(-1, 1)
@@ -80,13 +79,11 @@ def etape1_representation(images: dataset.ImageDataset, show_plots: bool = True)
                             title="Distribution basée sur le bruit",
                               xlabel="Bruit",
                               ylabel="Couleur R",
-                              zlabel="symétrie", isNormalized=True)
-                              
+                              zlabel="symétrie", isNormalized=True)                  
         plt.show(block=True)
     return features, feature_names
 
 def etape2_pretraitement(features: np.ndarray, feature_names: list, labels: np.ndarray, show_plots: bool = True) -> dataset.Representation:
-
     print("--- Étape 2 : Prétraitement avec Normalisation et réduction de dimensionnalité (PCA)---")
     scaler = StandardScaler()
     normalized_features = scaler.fit_transform(features)
@@ -110,7 +107,6 @@ def etape2_pretraitement(features: np.ndarray, feature_names: list, labels: np.n
     
     if show_plots:
         correlations_apres = numpy.corrcoef(pca_features, rowvar=False)
-        
         plt.figure(figsize=(8, 6))
         plt.imshow(correlations_apres, cmap='coolwarm', vmin=-1, vmax=1)
         plt.colorbar(label="Coefficient de corrélation (Pearson)")
@@ -120,11 +116,9 @@ def etape2_pretraitement(features: np.ndarray, feature_names: list, labels: np.n
         plt.tight_layout()
         plt.show(block=True)
     representation = dataset.Representation(data=pca_features, labels=labels)
-
     return representation,pca
 
 def etape3_classificateur_bayesien(representation: dataset.Representation, feature_names: list, show_plots: bool = True):
-    
     print("--- Étape 3 :Entraînement et évaluation du Classificateur Bayésien ---")
     bayes = classifier.BayesClassifier(density_function=analysis.GaussianPDF)
     bayes.fit(representation)
@@ -140,7 +134,6 @@ def etape3_classificateur_bayesien(representation: dataset.Representation, featu
     
     utils.get_impact_each_features_pred(bayes, representation.data, representation.labels, representation.unique_labels, feature_names)
     return error_rate
-
 
 def etape4_classificateur_knn(representation: dataset.Representation, feature_names: list, show_plots: bool = True):
     print("--- Étape 4 : Entraînement et évaluation du Classificateur k-moy, k-PPV ---")
@@ -194,7 +187,6 @@ def etape5_classificateur_rna(representation: dataset.Representation, show_plots
     return error_rate, nn_classifier
 
 def etape6_discussion_et_justifications(resultats: dict, show_plots: bool = True):
-
     if show_plots:
         print("--- Étape 6 : Compilation des résultats, Discussion et justifications ---")
         print("Récapitulatif des performances :")
@@ -220,7 +212,6 @@ def problematique():
     if SHOW_PLOTS:
         print("\nAffichage des figures (Fermez les fenêtres pour terminer le script)...")
         plt.show(block=True)
-  
 
 if __name__ == "__main__":
     problematique()
