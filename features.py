@@ -18,7 +18,7 @@ def calculate_noise(rgb_images_data:Dataset) -> np.ndarray:
     """
     noise_levels = np.zeros(len(rgb_images_data))
     for i, (image, _) in enumerate(rgb_images_data):
-        grayscale_image = np.mean(image, axis=2)  # Convert to grayscale by averaging the RGB channels
+        grayscale_image = np.mean(image, axis=-1)  # Convert to grayscale by averaging the RGB channels
         fft_image = np.fft.fft2(grayscale_image)
         fft_shifted = np.fft.fftshift(fft_image)
         magnitude_spectrum = np.abs(fft_shifted)
