@@ -37,7 +37,7 @@ def calculate_contrast(rgb_images_data:Dataset) -> np.ndarray:
     """
     contrast_levels = np.zeros(len(rgb_images_data))
     for i, (image, _) in enumerate(rgb_images_data):
-        grayscale_image = np.mean(image, axis=2)  # Convert to grayscale by averaging the RGB channels
+        grayscale_image = np.mean(image, axis=-1)  # Convert to grayscale by averaging the RGB channels
         contrast_levels[i] = np.max(grayscale_image) - np.min(grayscale_image)
     return contrast_levels
 
@@ -70,7 +70,7 @@ def calculate_ratio_high_low_frequency(rgb_images_data:Dataset) -> np.ndarray:
     """
     ratios = np.zeros(len(rgb_images_data))
     for i, (image, _) in enumerate(rgb_images_data):
-        grayscale_image = np.mean(image, axis=2)  # Convert to grayscale by averaging the RGB channels
+        grayscale_image = np.mean(image, axis=-1)  # Convert to grayscale by averaging the RGB channels
         fft_image = np.fft.fft2(grayscale_image)
         fft_shifted = np.fft.fftshift(fft_image)
         magnitude_spectrum = np.abs(fft_shifted)
@@ -90,7 +90,7 @@ def vertical_horizontal_ratio(rgb_images_data:Dataset) -> np.ndarray:
     """
     ratios = np.zeros(len(rgb_images_data))
     for i, (image, _) in enumerate(rgb_images_data):
-        grayscale_image = np.mean(image, axis=2)  # Convert to grayscale by averaging the RGB channels
+        grayscale_image = np.mean(image, axis=-1)  # Convert to grayscale by averaging the RGB channels
         edges = sobel(grayscale_image)
         vertical_edges = np.sum(np.abs(edges[:, :-1] - edges[:, 1:]))  # Vertical edge strength
         horizontal_edges = np.sum(np.abs(edges[:-1, :] - edges[1:, :]))  # Horizontal edge strength
@@ -108,9 +108,9 @@ def calculate_ratio_symmetry(rgb_images_data:Dataset) -> np.ndarray:
     """
     symmetry_levels = np.zeros(len(rgb_images_data))
     for i, (image, _) in enumerate(rgb_images_data):
-        grayscale_image = np.mean(image, axis=2)  # Convert to grayscale by averaging the RGB channels
+        grayscale_image = np.mean(image, axis=-1)  # Convert to grayscale by averaging the RGB channels
         flipped_image = np.fliplr(grayscale_image)  # Flip the image horizontally
-        symmetry_levels[i] = np.sum(np.abs(grayscale_image - flipped_image)) / grayscale_image.size
+        symmetry_levels[i] = np.mean(np.abs(grayscale_image - flipped_image))
     return symmetry_levels
 
 def calculate_lab_b_peaks(rgb_images_data:Dataset) -> np.ndarray:
