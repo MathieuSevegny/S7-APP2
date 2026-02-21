@@ -23,24 +23,23 @@ import helpers.dataset as dataset
 from features import *
 
 
-def etape1_representation(images: dataset.ImageDataset, show_plots: bool = False) -> np.ndarray:
+def etape1_representation(images: dataset.ImageDataset, show_plots: bool = True) -> np.ndarray:
     
     print("--- Étape 1 : Représentation ---")
     noise_feature = calculate_noise(images).reshape(-1, 1)
-    ratio_high_low = vertical_horizontal_ratio(images).reshape(-1, 1)
+    ratio_vertical_horizontal = calculate_ratio_vertical_horizontal(images).reshape(-1, 1)
     number_lab_b_peaks = calculate_lab_b_peaks(images).reshape(-1, 1)
     ecart_type = calculate_std_dev(images).reshape(-1, 3)
     ecart_type_rouge = ecart_type[:,0:1]
     
-    features = np.hstack((noise_feature, number_lab_b_peaks, ratio_high_low, ecart_type_rouge))
+    features = np.hstack((noise_feature, number_lab_b_peaks, ecart_type_rouge, ratio_vertical_horizontal))
     feature_names = [
             "Bruit",
             "Pics Lab(b)", 
-            "Ratio Freq",
-            "Écart R"
+            "Écart R",
+            "Ratio Vert/Horiz"
         ]
     print(f"Features extraites. Shape: {features.shape}\n")
-    
     
     if show_plots:
 
@@ -65,16 +64,14 @@ def etape1_representation(images: dataset.ImageDataset, show_plots: bool = False
                                    ylabel="Ratio haut/bas fréquence",
                                    n_bins=32,
                                    features_names=["Bruit"])
-
-        ratio_representation = dataset.Representation(data=ratio_high_low, labels=images.labels)
-        viz.plot_features_distribution(ratio_representation, 
-                                   title="Distribution du ratio haut/bas fréquence", 
-                                   xlabel="Ratio haut/bas fréquence", 
-                                   ylabel="Bruit",
-                                   n_bins=32,
-                                   features_names=["Ratio haut/bas fréquence"])
         
-
+        ratio_vertical_horizontal_representation = dataset.Representation(data=ratio_vertical_horizontal, labels=images.labels)
+        viz.plot_features_distribution(ratio_vertical_horizontal_representation, 
+                                   title="Distribution du ratio vertical/horizontal", 
+                                   xlabel="Ratio vertical/horizontal", 
+                                   ylabel="Nombre d'images",
+                                   n_bins=32,
+                                   features_names=["Ratio vertical/horizontal"])
         
         subrepresentation = dataset.Representation(data=features[:, 0:3], labels=images.labels)
         viz.plot_data_distribution(subrepresentation,
@@ -109,7 +106,6 @@ def etape2_pretraitement(features: np.ndarray, feature_names: list, labels: np.n
     print(f"Variance expliquée : {numpy.round(pca.explained_variance_ratio_ * 100, 2)}")
     print(f"Information totale conservée : {numpy.sum(pca.explained_variance_ratio_) * 100:.2f}%\n")
     
-
     representation = dataset.Representation(data=pca_features, labels=labels)
 
     return representation,pca
@@ -134,7 +130,6 @@ def etape3_classificateur_bayesien(representation: dataset.Representation, featu
 
 
 def etape4_classificateur_knn(representation: dataset.Representation, feature_names: list, show_plots: bool = True):
-
     print("--- Étape 4 : Entraînement et évaluation du Classificateur k-moy, k-PPV ---")
     knn = classifier.KNNClassifier(n_neighbors=5, use_kmeans=False, n_representatives=10)
     knn.fit(representation)
