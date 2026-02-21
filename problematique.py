@@ -30,13 +30,14 @@ def etape1_representation(images: dataset.ImageDataset, show_plots: bool = False
     ratio_high_low = vertical_horizontal_ratio(images).reshape(-1, 1)
     number_lab_b_peaks = calculate_lab_b_peaks(images).reshape(-1, 1)
     ecart_type = calculate_std_dev(images).reshape(-1, 3)
+    ecart_type_rouge = ecart_type[:,0:1]
     
-    features = np.hstack((noise_feature, number_lab_b_peaks, ratio_high_low, ecart_type))
+    features = np.hstack((noise_feature, number_lab_b_peaks, ratio_high_low, ecart_type_rouge))
     feature_names = [
             "Bruit",
             "Pics Lab(b)", 
             "Ratio Freq",
-            "Écart R", "Écart G", "Écart B"
+            "Écart R"
         ]
     print(f"Features extraites. Shape: {features.shape}\n")
     
@@ -50,13 +51,13 @@ def etape1_representation(images: dataset.ImageDataset, show_plots: bool = False
                                    ylabel="Nombre d'images",
                                    n_bins=32,
                                    features_names=["Nombre de pics dans le canal b du Lab"])
-        ecart_representation = dataset.Representation(data=ecart_type, labels=images.labels)
+        ecart_representation = dataset.Representation(data=ecart_type_rouge, labels=images.labels)
         viz.plot_features_distribution(ecart_representation, 
                                    title="Distribution des écarts-types", 
                                    xlabel="Valeur de l'écart-type",
                                    ylabel="Nombre d'images",
                                    n_bins=32,
-                                   features_names=["Écart-type R", "Écart-type G", "Écart-type B"])
+                                   features_names=["Écart-type R"])
         noise_representation = dataset.Representation(data=noise_feature, labels=images.labels)
         viz.plot_features_distribution(noise_representation, 
                                    title="Distribution du bruit", 
