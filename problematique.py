@@ -98,7 +98,7 @@ def etape2_pretraitement(features: np.ndarray, feature_names: list, labels: np.n
         plt.colorbar(label="Coefficient de corrélation (Pearson)")
         plt.xticks(ticks=numpy.arange(len(feature_names)), labels=feature_names, rotation=45, ha='right')
         plt.yticks(ticks=numpy.arange(len(feature_names)), labels=feature_names)
-        plt.title("Matrice de corrélation des caractéristiques")
+        plt.title("Matrice de corrélation AVANT PCA")
         plt.tight_layout()
         plt.show(block=True)
     
@@ -109,7 +109,17 @@ def etape2_pretraitement(features: np.ndarray, feature_names: list, labels: np.n
     print(f"Variance expliquée : {numpy.round(pca.explained_variance_ratio_ * 100, 2)}")
     print(f"Information totale conservée : {numpy.sum(pca.explained_variance_ratio_) * 100:.2f}%\n")
     
-
+    if show_plots:
+        correlations_apres = numpy.corrcoef(pca_features, rowvar=False)
+        
+        plt.figure(figsize=(8, 6))
+        plt.imshow(correlations_apres, cmap='coolwarm', vmin=-1, vmax=1)
+        plt.colorbar(label="Coefficient de corrélation (Pearson)")
+        plt.xticks(ticks=numpy.arange(len(feature_names)), labels=feature_names, rotation=45, ha='right')
+        plt.yticks(ticks=numpy.arange(len(feature_names)), labels=feature_names)
+        plt.title("Matrice de corrélation APRÈS PCA (Décorrélation)")
+        plt.tight_layout()
+        plt.show(block=True)
     representation = dataset.Representation(data=pca_features, labels=labels)
 
     return representation,pca
