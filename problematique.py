@@ -23,32 +23,21 @@ import helpers.dataset as dataset
 from features import *
 
 
-
-def problematique():
-    images = dataset.ImageDataset("data/image_dataset/")
+def etape1_representation(images: dataset.ImageDataset, show_plots: bool = True) -> np.ndarray:
     
+    print("--- Étape 1 : Représentation ---")
     noise_feature = calculate_noise(images).reshape(-1, 1)
-    
     colors_top_left = calculate_most_common_color_in_top_left_corner(images).reshape(-1, 3)
     ratio_high_low = vertical_horizontal_ratio(images).reshape(-1, 1)
     symmetry = calculate_ratio_symmetry(images).reshape(-1, 1)
     number_lab_b_peaks = calculate_lab_b_peaks(images).reshape(-1, 1)
     ecart_type = calculate_std_dev(images).reshape(-1, 3)
+    
     features = np.hstack((noise_feature, colors_top_left, symmetry, ratio_high_low, number_lab_b_peaks, ecart_type))
-  
-    print("Features shape:", features.shape)    
-
-    # TODO Problématique: Générez une représentation des images appropriée
-    # pour la classification comme dans le laboratoire 1.
-    # -------------------------------------------------------------------------
-    representation = dataset.Representation(data=features, labels=images.labels)
-    # -------------------------------------------------------------------------
-
-    # TODO: Problématique: Visualisez cette représentation
-    # -------------------------------------------------------------------------
-    # 
-    # -------------------------------------------------------------------------
-    if True:
+    print(f"Features extraites. Shape: {features.shape}\n")
+    
+    
+    if show_plots:
         ecart_representation = dataset.Representation(data=ecart_type, labels=images.labels)
         viz.plot_features_distribution(ecart_representation, 
                                    title="Distribution des écarts-types", 
@@ -103,11 +92,15 @@ def problematique():
                               ylabel="Couleur R",
                               zlabel="symétrie", isNormalized=True)
                               
-        plt.show()
-    if True:
- 
-        scaler = StandardScaler()
-        normalized_features = scaler.fit_transform(features)
+        plt.show(block=True)
+    return features
+
+def etape2_pretraitement(features: np.ndarray, labels: np.ndarray, show_plots: bool = True) -> dataset.Representation:
+
+    print("--- Étape 2 : Prétraitement avec Normalisation et réduction de dimensionnalité (PCA)---")
+    scaler = StandardScaler()
+    normalized_features = scaler.fit_transform(features)
+    if show_plots:
         feature_names = [
             "Bruit", 
             "Coul R", "Coul G", "Coul B", 
@@ -126,61 +119,114 @@ def problematique():
         plt.yticks(ticks=numpy.arange(len(feature_names)), labels=feature_names)
         plt.title("Matrice de corrélation des caractéristiques")
         plt.tight_layout()
-        plt.show()
-        
-        pca = PCA(n_components=min(10, normalized_features.shape[1]))
-        pca_features = pca.fit_transform(normalized_features)
-        
-        print("\n--- Analyse en Composantes Principales (PCA) ---")
-        print(f"Variance expliquée : {numpy.round(pca.explained_variance_ratio_ * 100, 2)}")
-        print(f"Information totale conservée : {numpy.sum(pca.explained_variance_ratio_) * 100:.2f}%\n")
-        
-    
-        representation = dataset.Representation(data=pca_features, labels=images.labels)
-    # =========================================================================
-    # TODO: Problématique: Comparez différents classificateurs sur cette
-    # représentation, comme dans le laboratoire 2 et 3.
-    # -------------------------------------------------------------------------
-    # 
-    # -------------------------------------------------------------------------
-        # L2.E4.1, L2.E4.2, L2.E4.3 et L2.E4.4
-    # Complétez la classe NeuralNetworkClassifier dans helpers/classifier.py
-    # -------------------------------------------------------------------------
-
-    if True:
-        nn_classifier = classifier.NeuralNetworkClassifier(input_dim=representation.data.shape[-1],
-                                                        output_dim=len(representation.unique_labels),
-                                                        n_hidden=3,
-                                                        n_neurons=8,
-                                                        lr=0.001,
-                                                        n_epochs=70,
-                                                        batch_size=16)
-        # -------------------------------------------------------------------------
-        nn_classifier.fit(representation)
-        save_dir = pathlib.Path(__file__).parent / "saves"
-        save_dir.mkdir(parents=True, exist_ok=True)
-
-        # 2. Save the model
-        nn_classifier.save(save_dir / "multimodal_classifier.keras")
-
-        # 3. Plot and save training metrics
-        viz.plot_metric_history(nn_classifier.history)
-        plt.savefig(save_dir / "training_history.png")
-        
-        # viz.plot_numerical_decision_regions(nn_classifier, representation)
-        
-        data = nn_classifier.preprocess_data(representation.data)
-        
-        predictions = nn_classifier.predict(data)
-        predictions = numpy.array([representation.unique_labels[i] for i in predictions])
-
-        error_rate, indexes_errors = analysis.compute_error_rate(representation.labels, predictions)
-        print(f"\n\n{len(indexes_errors)} erreurs de classification sur {len(predictions)} échantillons ({error_rate * 100:.2f}%).")
-
-        # 4. Affichage de la matrice de confusion et blocage de la fenêtre
-        viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=True)
-        
         plt.show(block=True)
+    
+    pca = PCA(n_components=min(10, normalized_features.shape[1]))
+    pca_features = pca.fit_transform(normalized_features)
+    
+    print("\n--- Analyse en Composantes Principales (PCA) ---")
+    print(f"Variance expliquée : {numpy.round(pca.explained_variance_ratio_ * 100, 2)}")
+    print(f"Information totale conservée : {numpy.sum(pca.explained_variance_ratio_) * 100:.2f}%\n")
+    
+
+    representation = dataset.Representation(data=pca_features, labels=labels)
+
+    return representation
+
+def etape3_classificateur_bayesien(representation: dataset.Representation, show_plots: bool = True):
+    
+    print("--- Étape 3 :Entraînement et évaluation du Classificateur Bayésien ---")
+    bayes = classifier.BayesClassifier(density_function=analysis.GaussianPDF)
+    bayes.fit(representation)
+
+    predictions_indices = bayes.predict(representation.data)
+    predictions_labels = representation.unique_labels[predictions_indices]
+    error_rate, _ = analysis.compute_error_rate(representation.labels, predictions_labels)
+    print(f"Taux d'erreur Bayésien : {error_rate * 100:.2f}%")
+    
+    if show_plots:
+        viz.show_confusion_matrix(representation.labels, predictions_labels, representation.unique_labels, plot=True)
+    print("\n")
+    
+    return error_rate
+
+
+def etape4_classificateur_knn(representation: dataset.Representation, show_plots: bool = True):
+
+    print("--- Étape 4 : Entraînement et évaluation du Classificateur k-moy, k-PPV ---")
+    knn = classifier.KNNClassifier(n_neighbors=5, use_kmeans=True, n_representatives=10)
+    knn.fit(representation)
+    predictions = knn.predict(representation.data)
+    error_rate, _ = analysis.compute_error_rate(representation.labels, predictions)
+    print(f"Taux d'erreur KNN : {error_rate * 100:.2f}%")
+    if show_plots:
+        viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=True)
+    print("\n")
+    return error_rate
+
+
+def etape5_classificateur_rna(representation: dataset.Representation, show_plots: bool = True):
+    """
+    Étape 5 : Entraînement et évaluation du Réseau de Neurones Artificiels.
+    """
+    print("--- Étape 5 : Classificateur RNA ---")
+    nn_classifier = classifier.NeuralNetworkClassifier(
+        input_dim=representation.dim,
+        output_dim=len(representation.unique_labels),
+        n_hidden=3,
+        n_neurons=8,
+        lr=0.001,
+        n_epochs=70,
+        batch_size=16
+    )
+    nn_classifier.fit(representation)
+    save_dir = pathlib.Path(__file__).parent / "saves"
+    save_dir.mkdir(parents=True, exist_ok=True)
+    nn_classifier.save(save_dir / "multimodal_classifier.keras")
+    if show_plots:
+        viz.plot_metric_history(nn_classifier.history)
+    plt.savefig(save_dir / "training_history.png")
+
+    data = nn_classifier.preprocess_data(representation.data)
+    predictions = nn_classifier.predict(data)
+    predictions_labels = np.array([representation.unique_labels[i] for i in predictions])
+
+    error_rate, indexes_errors = analysis.compute_error_rate(representation.labels, predictions_labels)
+    print(f"\n{len(indexes_errors)} erreurs de classification sur {len(predictions)} échantillons ({error_rate * 100:.2f}%).")
+    
+    if show_plots:
+        viz.show_confusion_matrix(representation.labels, predictions_labels, representation.unique_labels, plot=True)
+    print("\n")
+    return error_rate, nn_classifier
+
+def etape6_discussion_et_justifications(resultats: dict, show_plots: bool = True):
+
+    if show_plots:
+        print("--- Étape 6 : Compilation des résultats, Discussion et justifications ---")
+        print("Récapitulatif des performances :")
+        for nom, erreur in resultats.items():
+            print(f"- {nom} : {erreur * 100:.2f}% d'erreur")
+        plt.show(block=True)
+    
+def problematique():
+    images = dataset.ImageDataset("data/image_dataset/")
+    SHOW_PLOTS = True
+    features = etape1_representation(images)
+    representation = etape2_pretraitement(features, images.labels)
+    err_bayes = etape3_classificateur_bayesien(representation)
+    err_knn = etape4_classificateur_knn(representation)
+    err_rna, rna_model = etape5_classificateur_rna(representation)
+    resultats = {
+        "Bayésien": err_bayes,
+        "K-PPV (KNN)": err_knn,
+        "RNA": err_rna
+    }
+    etape6_discussion_et_justifications(resultats)
+
+    if SHOW_PLOTS:
+        print("\nAffichage des figures (Fermez les fenêtres pour terminer le script)...")
+        plt.show(block=True)
+  
 
 if __name__ == "__main__":
     problematique()
