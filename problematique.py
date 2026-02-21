@@ -21,6 +21,8 @@ from sklearn.decomposition import PCA
 from helpers import analysis, classifier, viz
 import helpers.dataset as dataset
 from features import *
+from sklearn.model_selection import train_test_split
+import copy
 
 
 def etape1_representation(images: dataset.ImageDataset, show_plots: bool = True) -> np.ndarray:
@@ -142,7 +144,8 @@ def etape3_classificateur_bayesien(representation: dataset.Representation, featu
 
 def etape4_classificateur_knn(representation: dataset.Representation, feature_names: list, show_plots: bool = True):
     print("--- Étape 4 : Entraînement et évaluation du Classificateur k-moy, k-PPV ---")
-    knn = classifier.KNNClassifier(n_neighbors=5, use_kmeans=False, n_representatives=10)
+    best_params = utils.get_best_parameters_knn(representation)
+    knn = classifier.KNNClassifier(n_neighbors=best_params['k'], use_kmeans=best_params['use_kmeans'], n_representatives=best_params['n_representatives'])
     knn.fit(representation)
     predictions = knn.predict(representation.data)
     error_rate, _ = analysis.compute_error_rate(representation.labels, predictions)
@@ -152,7 +155,7 @@ def etape4_classificateur_knn(representation: dataset.Representation, feature_na
     utils.get_impact_each_features_pred(knn, representation.data, representation.labels, representation.unique_labels, feature_names)
     return error_rate
 
-       
+
 
 
 def etape5_classificateur_rna(representation: dataset.Representation, show_plots: bool = True, feature_names: list = None):
