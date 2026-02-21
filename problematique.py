@@ -31,7 +31,7 @@ def problematique():
     ratio_high_low = vertical_horizontal_ratio(images).reshape(-1, 1)
     symmetry = calculate_ratio_symmetry(images).reshape(-1, 1)
     number_lab_b_peaks = calculate_lab_b_peaks(images).reshape(-1, 1)
-    features = np.hstack((noise_feature, colors_top_left, symmetry, ratio_high_low, number_lab_b_peaks))
+    features = np.hstack((noise_feature, ratio_high_low, number_lab_b_peaks, symmetry, colors_top_left))
     
     print("Features shape:", features.shape)    
 
@@ -88,10 +88,10 @@ def problematique():
         
         subrepresentation = dataset.Representation(data=features[:, 0:3], labels=images.labels)
         viz.plot_data_distribution(subrepresentation,
-                            title="Distribution basée sur le bruit",
+                            title="Distribution des 3 premières features",
                               xlabel="Bruit",
-                              ylabel="Couleur R",
-                              zlabel="symétrie", isNormalized=True)
+                              ylabel="Ratio hautes/basses fréquences",
+                              zlabel="Pics canal B labs", isNormalized=True)
                               
         plt.show()
     # TODO: Problématique: Comparez différents classificateurs sur cette
