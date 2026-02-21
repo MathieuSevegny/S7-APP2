@@ -118,7 +118,7 @@ def problematique():
         nn_classifier.save(pathlib.Path(__file__).parent / "saves/multimodal_classifier.keras")
 
         # Plot training metrics
-        #viz.plot_metric_history(nn_classifier.history)
+        viz.plot_metric_history(nn_classifier.history)
 
         #viz.plot_numerical_decision_regions(nn_classifier, representation)
         
@@ -130,7 +130,7 @@ def problematique():
         error_rate, indexes_errors = analysis.compute_error_rate(representation.labels, predictions)
         print(f"\n\n{len(indexes_errors)} erreurs de classification sur {len(predictions)} échantillons ({error_rate * 100:.2f}%).")
 
-        #viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=True)
+        viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=True)
         
         plt.show()
 
