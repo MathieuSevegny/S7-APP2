@@ -79,7 +79,7 @@ def calculate_ratio_high_low_frequency(rgb_images_data:Dataset) -> np.ndarray:
         ratios[i] = high_freq / (low_freq + 1e-8)  # Avoid division by zero
     return ratios
 
-def vertical_horizontal_ratio(rgb_images_data:Dataset) -> np.ndarray:
+def calculate_ratio_vertical_horizontal(rgb_images_data:Dataset) -> np.ndarray:
     """
     Calculate ratio of vertical and horizontal edges.
     
