@@ -53,8 +53,8 @@ def etape1_representation(images: dataset.ImageDataset, show_plots: bool = False
         ecart_representation = dataset.Representation(data=ecart_type, labels=images.labels)
         viz.plot_features_distribution(ecart_representation, 
                                    title="Distribution des écarts-types", 
-                                   xlabel="Écart-type R", 
-                                   ylabel="Écart-type G",
+                                   xlabel="Valeur de l'écart-type",
+                                   ylabel="Nombre d'images",
                                    n_bins=32,
                                    features_names=["Écart-type R", "Écart-type G", "Écart-type B"])
         noise_representation = dataset.Representation(data=noise_feature, labels=images.labels)
