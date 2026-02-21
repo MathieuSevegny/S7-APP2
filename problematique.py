@@ -154,10 +154,12 @@ def etape3_classificateur_bayesien(representation: dataset.Representation, show_
 def etape4_classificateur_knn(representation: dataset.Representation, show_plots: bool = True):
 
     print("--- Étape 4 : Entraînement et évaluation du Classificateur k-moy, k-PPV ---")
-    knn = classifier.KNNClassifier(n_neighbors=5, use_kmeans=True, n_representatives=10)
+    knn = classifier.KNNClassifier(n_neighbors=5, use_kmeans=False, n_representatives=10)
     knn.fit(representation)
     predictions = knn.predict(representation.data)
     error_rate, _ = analysis.compute_error_rate(representation.labels, predictions)
+    impacts = utils.get_impact_each_features_pred(knn, representation.data, representation.labels, representation.unique_labels)
+    print(f"Impact de chaque caractéristique sur la performance du KNN : {impacts}")
     print(f"Taux d'erreur KNN : {error_rate * 100:.2f}%")
     if show_plots:
         viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=True)
