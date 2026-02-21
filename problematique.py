@@ -26,11 +26,11 @@ def problematique():
     images = dataset.ImageDataset("data/image_dataset/")
     
     noise_feature = calculate_noise(images).reshape(-1, 1)
-
-    #colors_top_left = calculate_most_common_color_in_top_left_corner(images).reshape(-1, 3)
-    ratio_high_low = calculate_ratio_high_low_frequency(images).reshape(-1, 1)
+    colors_top_left = calculate_most_common_color_in_top_left_corner(images).reshape(-1, 3)
+    ratio_high_low = vertical_horizontal_ratio(images).reshape(-1, 1)
+    symmetry = calculate_ratio_symmetry(images).reshape(-1, 1)
     
-    features = np.hstack((noise_feature, ratio_high_low))
+    features = np.hstack((noise_feature, colors_top_left, ratio_high_low, symmetry))
     
     print("Features shape:", features.shape)    
 
@@ -52,6 +52,7 @@ def problematique():
                                    ylabel="Ratio haut/bas fréquence",
                                    n_bins=32,
                                    features_names=["Bruit"])
+
         ratio_representation = dataset.Representation(data=ratio_high_low, labels=images.labels)
         viz.plot_features_distribution(ratio_representation, 
                                    title="Distribution du ratio haut/bas fréquence", 
@@ -77,7 +78,7 @@ def problematique():
     # Complétez la classe NeuralNetworkClassifier dans helpers/classifier.py
     # -------------------------------------------------------------------------
 
-    if False:
+    if True:
         nn_classifier = classifier.NeuralNetworkClassifier(input_dim=representation.data.shape[-1],
                                                         output_dim=len(representation.unique_labels),
                                                         n_hidden=3,
@@ -92,9 +93,9 @@ def problematique():
         nn_classifier.save(pathlib.Path(__file__).parent / "saves/multimodal_classifier.keras")
 
         # Plot training metrics
-        viz.plot_metric_history(nn_classifier.history)
+        #viz.plot_metric_history(nn_classifier.history)
 
-        viz.plot_numerical_decision_regions(nn_classifier, representation)
+        #viz.plot_numerical_decision_regions(nn_classifier, representation)
         
         data = nn_classifier.preprocess_data(representation.data)
         
@@ -104,9 +105,9 @@ def problematique():
         error_rate, indexes_errors = analysis.compute_error_rate(representation.labels, predictions)
         print(f"\n\n{len(indexes_errors)} erreurs de classification sur {len(predictions)} échantillons ({error_rate * 100:.2f}%).")
 
-        viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=True)
+        #viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=True)
         
-        plt.show()
+        #plt.show()
 
 if __name__ == "__main__":
     problematique()
