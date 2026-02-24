@@ -261,7 +261,7 @@ class HistogramPDF(ProbabilityDensityFunction):
         # L3.S2.1 Construire un modèle empirique de densité de probabilité pour chacune des classes
         # (Utilisez numpy.histogramdd, retirez les tenseur nulles et les 1 suspect)
         # ---------------------------------------------------------------------
-        self.histogram, self.bin_edges = numpy.histogramdd(numpy.zeros_like(data), bins=1, density=True)
+        self.histogram, self.bin_edges = numpy.histogramdd(data, bins=n_bins, density=True)
         # ---------------------------------------------------------------------
 
     def compute_probability(self, data: numpy.ndarray) -> numpy.ndarray:
@@ -273,5 +273,15 @@ class HistogramPDF(ProbabilityDensityFunction):
         """
         # L3.S2.2 Compléter la méthode pour calculer la probabilité d'appartenir à cette classe
         # ---------------------------------------------------------------------
-        return numpy.zeros(data.shape[0])
+        # Trouver les indices des bins pour chaque dimension
+        bin_indices = [numpy.digitize(data[:, i], self.bin_edges[i]) - 1 for i in range(self.dim)]
+        bin_indices = numpy.array(bin_indices).T
+        probabilities = numpy.zeros(data.shape[0])
+        for i in range(data.shape[0]):
+            if all(0 <= bin_indices[i, j] < self.n_bins for j in range(self.dim)):
+                probabilities[i] = self.histogram[tuple(bin_indices[i])]
+            else:
+                probabilities[i] = 0.0
+        return probabilities
+    
         # ---------------------------------------------------------------------

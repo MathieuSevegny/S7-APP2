@@ -167,10 +167,10 @@ def exercice_s2_pdf_arbitraire():
 def main():
     # pylint: disable = using-constant-test, multiple-statements
 
-    if True: exercice_1_modele_gaussiens()
-    if True: exercice_2_classificateur_ppv()
-    if True: exercice_3_classificateur_bayesien()
-    if True: exercice_s1_classificateur_bayesien_complet()
+    if False: exercice_1_modele_gaussiens()
+    if False: exercice_2_classificateur_ppv()
+    if False: exercice_3_classificateur_bayesien()
+    if False: exercice_s1_classificateur_bayesien_complet()
     if True: exercice_s2_pdf_arbitraire()
 
 
