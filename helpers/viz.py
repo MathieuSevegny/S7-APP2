@@ -315,7 +315,8 @@ def plot_data_distribution(representation: dataset.Representation,
         add_analytical_decision_regions(ax, representation, priors=priors)
 
     ax_handles, ax_labels = ax.get_legend_handles_labels()
-    fig.legend(ax_handles, ax_labels, loc="upper right", bbox_to_anchor=(1, 0.925))
+    legendes_uniques = dict(zip(ax_labels, ax_handles))
+    fig.legend(legendes_uniques.values(), legendes_uniques.keys(), loc="upper right", bbox_to_anchor=(1, 0.925))
 
     fig.gca().set_aspect("equal", adjustable="datalim")
 
@@ -343,11 +344,12 @@ def add_gaussian_components(ax: plt.Axes, model: GaussianModel, scale: float = 1
 
     for i in range(dim):
         vector = model.eigenvectors[:, i] * numpy.sqrt(model.eigenvalues[i]) * scale
-        
+        linewidth_factor = 0.007 if i == (dim - 1) else 0.004
         if dim == 2:
-            ax.quiver(*origin, *vector, color=color[i], alpha=1, angles="xy", scale_units="xy", scale=1, width=0.005, headwidth=2, headlength=4)
+            
+            ax.quiver(*origin, *vector, color=color[i], alpha=1, angles="xy", scale_units="xy", scale=1, width=linewidth_factor, headwidth=2, headlength=4)
         elif dim == 3:
-            ax.quiver(*origin, *vector, color=color[i], alpha=1)
+            ax.quiver(*origin, *vector, color=color[i], alpha=1,linewidth=2 if i == (dim - 1) else 1)
 
 
 def plot_metric_history(history: keras.callbacks.History):
@@ -406,7 +408,7 @@ def show_confusion_matrix(target: numpy.ndarray, predictions: numpy.ndarray, cla
     fig.tight_layout()
 
 
-def plot_numerical_decision_regions(model: classifier.Classifier, data: Union[dataset.Representation, numpy.ndarray]):
+def plot_numerical_decision_regions(model: classifier.Classifier, data: Union[dataset.Representation, numpy.ndarray], title: str = "Frontières de décision numérique"):
     """
     Affiche les frontières de décision d'un classificateur numérique sur des données 2D,
     en utilisant une grille de points uniformément distribués à prédire dans l'espace des caractéristiques.
@@ -450,7 +452,7 @@ def plot_numerical_decision_regions(model: classifier.Classifier, data: Union[da
     prediction = prediction.reshape(mesh[0].shape)
 
     # Plot decision regions
-    fig, ax = _get_axes(figsize=DEFAULT_FIGSIZE, title="Frontières de décision numérique", xlabel="X", ylabel="Y")
+    fig, ax = _get_axes(figsize=DEFAULT_FIGSIZE, title=title, xlabel="X", ylabel="Y")
 
     ax.contourf(*mesh, prediction, cmap=CMAP, alpha=1)
 
@@ -531,7 +533,8 @@ def add_ellipse(ax: plt.Axes, model: GaussianModel):
 
     theta = numpy.linspace(0, 2 * numpy.pi, 300)
 
-    ax.scatter(*model.mean, color="black", s=10, linewidths=3)
+    ax.scatter(*model.mean, color="green", marker='x', s=25, linewidths=2, 
+               label="Moyenne ($\mu$)", zorder=10)
 
     for plane in itertools.combinations(range(dim), 2):
         # L3.E1.1 Remplacer les valeurs bidons par les bons paramètres
@@ -549,12 +552,18 @@ def add_ellipse(ax: plt.Axes, model: GaussianModel):
         # ---------------------------------------------------------------------
 
         basis = model.eigenvectors[:, plane]
-
         projected_ellipse = numpy.matmul(basis, ellipse).T + model.mean
+        ax.plot(*projected_ellipse.T, color="black", linewidth=1.6, linestyle="--", label="Ellipse $1 \sigma$" if plane == (0, 1) else None)
+        
+        p1 = model.mean + vec1 * numpy.sqrt(val1)
+        p2 = model.mean + vec2 * numpy.sqrt(val2)
 
-        ax.plot(*projected_ellipse.T, color="black", linewidth=2, alpha=0.8)
+        ligne_axe1 = numpy.vstack([model.mean, p1])
+        ligne_axe2 = numpy.vstack([model.mean, p2])
 
-
+        ax.plot(*ligne_axe1.T, color="red", linewidth=2, linestyle="-")
+        ax.plot(*ligne_axe2.T, color="blue", linewidth=2, linestyle="-")
+        # =====================================================================
 def plot_classification_errors(representation: dataset.Representation,
                                predictions: numpy.ndarray,
                                title: str = "Erreurs de classification",
@@ -652,15 +661,17 @@ def plot_pdf(representation: dataset.Representation, n_bins: int = 10, title: st
         bin_widths = numpy.diff(bin_edges, axis=1)
 
         if title is None:
-            title = f"Histogramme densité de probabilité - Classe {label}"
+            titre_actuel = f"Histogramme densité de probabilité - Classe {label}"
+        else:
+            titre_actuel = f"{title} - Classe {label}"
 
         if dim == 1:
-            _, axes = _get_axes(projection=projection, title=title, xlabel="X", ylabel="Densité de probabilité")
-
+            _, axes = _get_axes(projection=projection, title=titre_actuel, xlabel="X", ylabel="Densité de probabilité 1D")
             axes.bar(bin_centers[0], histogram, width=bin_widths[0], color=color)
 
         elif dim == 2:
-            _, axes = _get_axes(projection=projection, title=title, xlabel="X", ylabel="Y", zlabel="Densité de probabilité")
+            _, axes = _get_axes(projection=projection, title=titre_actuel, xlabel="X", ylabel="Y", zlabel="Densité de probabilité 2D")
+        # -----------------------------
 
             xpos, ypos = numpy.meshgrid(bin_centers[0], bin_centers[1], indexing="ij")
             xwidth, ywidth = numpy.meshgrid(bin_widths[0], bin_widths[1], indexing="ij")
@@ -799,7 +810,9 @@ def plot_features_distribution(representation: dataset.Representation,
             histogram, _ = numpy.histogram(data[:, i], bins=bin_edges, range=(features_min, features_max))
 
             ax.bar(bin_centers, histogram, width=bin_widths, alpha=0.5, label=label, color=colors[j])
-
+            mean_val = numpy.mean(data[:, i])
+            legend_label = "Moyenne" if j == 0 and i == 0 else ""
+            ax.axvline(x=mean_val, color=colors[j], linestyle='--', linewidth=2, alpha=0.9, label=legend_label)
         if xlabel:
             ax.set_xlabel(xlabel)
 

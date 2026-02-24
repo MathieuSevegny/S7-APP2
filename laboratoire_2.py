@@ -45,7 +45,7 @@ def main():
     nn_classifier.load(pathlib.Path(__file__).parent / "saves/multimodal_classifier.keras")
 
     # Generate a uniform distribution of samples over the minmax domain of the data
-    viz.plot_numerical_decision_regions(nn_classifier, representation)
+    viz.plot_numerical_decision_regions(nn_classifier, representation, title="Frontières de décision du classificateur de réseau de neurones")
 
     # Predict the classes over the whole dataset
     predictions = nn_classifier.predict(representation.data)
@@ -57,10 +57,10 @@ def main():
     error_rate, indexes_errors = analysis.compute_error_rate(representation.labels, predictions)
     print(f"\n{len(indexes_errors)} erreurs de classification sur {len(representation.labels)} échantillons ({error_rate * 100:.2f}%).")
 
-    viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=True)
+    viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=True, title="Matrice de confusion du classificateur de réseau de neurones")
     # -------------------------------------------------------------------------
 
-    viz.plot_classification_errors(representation, predictions)
+    viz.plot_classification_errors(representation, predictions, title="Erreurs du classificateur de réseau de neurones")
 
     plt.show()
 
