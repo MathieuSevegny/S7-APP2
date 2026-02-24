@@ -274,14 +274,22 @@ class HistogramPDF(ProbabilityDensityFunction):
         # L3.S2.2 Compléter la méthode pour calculer la probabilité d'appartenir à cette classe
         # ---------------------------------------------------------------------
         # Trouver les indices des bins pour chaque dimension
-        bin_indices = [numpy.digitize(data[:, i], self.bin_edges[i]) - 1 for i in range(self.dim)]
-        bin_indices = numpy.array(bin_indices).T
-        probabilities = numpy.zeros(data.shape[0])
-        for i in range(data.shape[0]):
-            if all(0 <= bin_indices[i, j] < self.n_bins for j in range(self.dim)):
-                probabilities[i] = self.histogram[tuple(bin_indices[i])]
-            else:
-                probabilities[i] = 0.0
-        return probabilities
-    
-        # ---------------------------------------------------------------------
+        n_samples = data.shape[0]
+        indices_par_dimension = []
+        donnees_hors_limites = numpy.zeros(n_samples, dtype=bool)
+
+        for dimension in range(self.dim):
+            bords_des_bins = self.bin_edges[dimension]
+            nombre_de_bins = len(bords_des_bins) - 1
+            # Trouver dans quel bin tombe chaque point pour cette dimension
+            indices = numpy.digitize(data[:, dimension], bords_des_bins) - 1
+            trop_petit = (indices < 0)
+            trop_grand = (indices >= nombre_de_bins)
+            donnees_hors_limites = donnees_hors_limites | trop_petit | trop_grand
+            indices_valides = numpy.clip(indices, 0, nombre_de_bins - 1)
+            indices_par_dimension.append(indices_valides)
+
+        probabilites = self.histogram[tuple(indices_par_dimension)]
+        probabilites[donnees_hors_limites] = 0.0
+
+        return probabilites

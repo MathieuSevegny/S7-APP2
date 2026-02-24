@@ -9,8 +9,6 @@ import sklearn.model_selection
 import sklearn.neighbors
 import sklearn.preprocessing
 
-import utils
-
 from . import (
     analysis,
     dataset
@@ -126,11 +124,17 @@ class BayesClassifier(Classifier):
         # L3.E3.2 Compléter cette fonction pour déployer le classificateur en assumant des classe équiprobables à coût unitaire
         # L3.S1 Modifier cette partie pour prendre en compte la matrice de coût et des classes non équiprobables
         # ---------------------------------------------------------------------
-        risks = numpy.zeros((data.shape[0], len(self.densities)))
+        # p(x|C_i) Transposer pour avoir (n_samples, n_classes) 
+        likelihoods = class_probabilities.T 
+        
+        # Multiplication par l'a priori P(C_i) pour obtenir la probabilité a posteriori (non normalisée)
+        posteriors = likelihoods * self.aprioris
+        
+        # Calcule du risque conditionnel R(a_i | x) en multipliant par la matrice de coût transposée
+        risks = numpy.dot(posteriors, self.cost_matrix.T)
 
-        # Ici, argmax de la probabilité assume des coûts unitaires et des aprioris égaux
-        # Dans le cadre de la problématique on cherche à minimiser le risque
-        predictions = numpy.argmax(class_probabilities.T, axis=1)
+        # On choisit la classe avec le plus petit risque
+        predictions = numpy.argmin(risks, axis=1)
         # ---------------------------------------------------------------------
 
         return predictions
@@ -316,7 +320,7 @@ class NeuralNetworkClassifier(Classifier):
         # -------------------------------------------------------------------------
         self.model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=self.lr),
-            loss=keras.losses.MeanSquaredError(),
+            loss=keras.losses.CategoricalCrossentropy(), # Remplacement de MeanSquaredError par CategoricalCrossentropy
             metrics=["accuracy"]
         )
         # -------------------------------------------------------------------------
@@ -353,8 +357,10 @@ class NeuralNetworkClassifier(Classifier):
         # L2.E4.1 Convertissez les étiquettes de classe en un format qui permet d'utiliser une loss plus approprié que MSE
         # pour l'entraînement d'un classificateur.
         # -------------------------------------------------------------------------
-        # Utiliser OneHotEncoder de sklearn à la place de cette ligne
-        labels_one_hot = utils.one_hot_for_labels(representation.labels, representation.unique_labels)
+        # Utiliser OneHotEncoder de sklearn
+        encoder = sklearn.preprocessing.OneHotEncoder(sparse_output=False)
+        labels_2d = representation.labels.reshape(-1, 1)
+        labels_one_hot = encoder.fit_transform(labels_2d)
         # -------------------------------------------------------------------------
 
         # L2.E4.2 Partitionnez les données en sous-ensemble d'entraînement et de validation.
@@ -383,7 +389,14 @@ class NeuralNetworkClassifier(Classifier):
         # L2.E4.4 Utilisez un callback pour visualiser la performance de l'entraînement tout les 25 epochs.
         # et un autre pour arrêter l'entraînement lorsque la généralisation se dégrade.
         # -------------------------------------------------------------------------
-        callbacks=[]
+        callbacks = [
+            PrintEveryNEpochs(n_epochs=25),
+            keras.callbacks.EarlyStopping(
+                monitor='val_loss', 
+                patience=10, 
+                restore_best_weights=True
+            ) 
+        ]
 
         self.history = self.model.fit(
             train_data, train_labels,
@@ -474,13 +487,10 @@ class PrintEveryNEpochs(keras.callbacks.Callback):
         # que l'affichage par défaut, par exemple à chaque multiple de n_epochs.
         if (epoch + 1) % self.n_epochs == 0:
             loss = logs["loss"]
-            val_loss = logs["val_loss"]
+            val_loss = logs.get("val_loss", 0.0)
 
-            accuracy = ""
-            val_accuracy = ""
-            if "accuracy" in logs:
-                accuracy = logs["accuracy"]
-                val_accuracy = logs["val_accuracy"]
+            accuracy = logs.get("accuracy", 0.0)
+            val_accuracy = logs.get("val_accuracy", 0.0)
 
             print(f"Epoch {epoch + 1:>3}: loss = {loss:.4f}, val_loss = {val_loss:.4f}, accuracy = {accuracy:.4f}, val_accuracy = {val_accuracy:.4f}")
 
