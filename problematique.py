@@ -29,35 +29,52 @@ def etape1_representation(images: dataset.ImageDataset, show_plots: bool = True)
     print("--- Étape 1 : Représentation ---")
     noise_feature = calculate_noise(images).reshape(-1, 1)
     ratio_vertical_horizontal = calculate_ratio_vertical_horizontal(images).reshape(-1, 1)
-    number_lab_b_peaks = calculate_lab_b_peaks(images).reshape(-1, 1)
+    number_lab_peaks = calculate_lab_peaks(images).reshape(-1, 3)
     ecart_type = calculate_std_dev(images).reshape(-1, 3)
-    ecart_type_rouge = ecart_type[:,0:1]
+    contrast = calculate_contrast(images).reshape(-1, 1)
+    most_common_color_top_left = calculate_most_common_color_in_top_left_corner(images).reshape(-1, 3)
+    ratio_high_low_freq = calculate_ratio_high_low_frequency(images).reshape(-1, 1)
+    ratio_symmetry = calculate_ratio_symmetry(images).reshape(-1, 1)
     
-    features = np.hstack((noise_feature, number_lab_b_peaks, ecart_type_rouge, ratio_vertical_horizontal))
+    
+    features = np.hstack((noise_feature, number_lab_peaks, ecart_type, ratio_vertical_horizontal, contrast, most_common_color_top_left, ratio_high_low_freq, ratio_symmetry))
     feature_names = [
             "Bruit",
-            "Pics Lab(b)", 
+            "Pics Lab(L)",
+            "Pics Lab(a)",
+            "Pics Lab(b)",
             "Écart R",
-            "Ratio Vert/Horiz"
+            "Écart G",
+            "Écart B",
+            "Ratio Vert/Horiz",
+            "Contraste",
+            "Couleur R Top-Gauche",
+            "Couleur G Top-Gauche",
+            "Couleur B Top-Gauche",
+            "Ratio Haut/Bas Fréquence",
+            "Ratio Symétrie"
         ]
+    
+    assert len(feature_names) == features.shape[1], f"Le nombre de noms de features doit correspondre au nombre de features extraites. Actuellement, {len(feature_names)} noms pour {features.shape[1]} features."
+    
     print(f"Features extraites. Shape: {features.shape}\n")
     
     if show_plots:
 
-        spickes_representation = dataset.Representation(data=number_lab_b_peaks, labels=images.labels)
+        spickes_representation = dataset.Representation(data=ecart_type, labels=images.labels)
         viz.plot_features_distribution(spickes_representation, 
-                                   title="Distribution du nombre de pics dans le canal b du Lab", 
-                                   xlabel="Nombre de pics dans le canal b du Lab", 
+                                   title="Distribution du nombre de pics dans les canaux Lab", 
+                                   xlabel="Nombre de pics dans le canal Lab", 
                                    ylabel="Nombre d'images",
                                    n_bins=32,
-                                   features_names=["Nombre de pics dans le canal b du Lab"])
-        ecart_representation = dataset.Representation(data=ecart_type_rouge, labels=images.labels)
+                                   features_names=["Nombre de pics dans le canal L Lab", "Nombre de pics dans le canal A Lab", "Nombre de pics dans le canal B Lab"])
+        ecart_representation = dataset.Representation(data=ecart_type, labels=images.labels)
         viz.plot_features_distribution(ecart_representation, 
                                    title="Distribution des écarts-types", 
                                    xlabel="Valeur de l'écart-type",
                                    ylabel="Nombre d'images",
                                    n_bins=32,
-                                   features_names=["Écart-type R"])
+                                   features_names=["Écart-type R", "Écart-type G", "Écart-type B"])
         noise_representation = dataset.Representation(data=noise_feature, labels=images.labels)
         viz.plot_features_distribution(noise_representation, 
                                    title="Distribution du bruit", 
@@ -73,6 +90,28 @@ def etape1_representation(images: dataset.ImageDataset, show_plots: bool = True)
                                    ylabel="Nombre d'images",
                                    n_bins=32,
                                    features_names=["Ratio vertical/horizontal"])
+        
+        contrast_representation = dataset.Representation(data=contrast, labels=images.labels)
+        viz.plot_features_distribution(contrast_representation,
+                                      title="Distribution du contraste", 
+                                      xlabel="Contraste", 
+                                      ylabel="Nombre d'images",
+                                      n_bins=32,
+                                      features_names=["Contraste"])
+        most_common_color_representation = dataset.Representation(data=most_common_color_top_left, labels=images.labels)
+        viz.plot_features_distribution(most_common_color_representation,
+                                      title="Distribution de la couleur la plus fréquente dans le coin supérieur gauche", 
+                                      xlabel="Valeur de la couleur la plus fréquente dans le coin supérieur gauche", 
+                                      ylabel="Nombre d'images",
+                                      n_bins=32,
+                                      features_names=["Couleur R Top-Gauche", "Couleur G Top-Gauche", "Couleur B Top-Gauche"])
+        ratio_high_low_freq_representation = dataset.Representation(data=ratio_high_low_freq, labels=images.labels)
+        viz.plot_features_distribution(ratio_high_low_freq_representation,
+                                      title="Distribution du ratio haut/bas fréquence", 
+                                      xlabel="Ratio haut/bas fréquence", 
+                                      ylabel="Nombre d'images",
+                                      n_bins=32,
+                                      features_names=["Ratio haut/bas fréquence"])
         
         subrepresentation = dataset.Representation(data=features[:, 0:3], labels=images.labels)
         viz.plot_data_distribution(subrepresentation,
@@ -98,8 +137,9 @@ def etape2_pretraitement(features: np.ndarray, feature_names: list, labels: np.n
         plt.tight_layout()
         plt.show(block=True)
     
-    pca = PCA(n_components=min(10, normalized_features.shape[1]))
-    pca_features = pca.fit_transform(normalized_features)
+    return dataset.Representation(data=normalized_features, labels=labels)
+    #pca = PCA(n_components=min(15, normalized_features.shape[1]))
+    #pca_features = pca.fit_transform(normalized_features)
     
     print("\n--- Analyse en Composantes Principales (PCA) ---")
     print(f"Variance expliquée : {numpy.round(pca.explained_variance_ratio_ * 100, 2)}")
@@ -184,7 +224,7 @@ def etape5_classificateur_rna(representation: dataset.Representation, show_plots
         viz.show_confusion_matrix(representation.labels, predictions_labels, representation.unique_labels, plot=True, title="Matrice de confusion du classificateur RNA")
     print("\n")
     utils.get_impact_each_features_pred(nn_classifier, representation.data, representation.labels, representation.unique_labels, feature_names)
-    return error_rate, nn_classifier
+    return error_rate
 
 def etape6_discussion_et_justifications(resultats: dict, show_plots: bool = True):
     if show_plots:
@@ -198,10 +238,10 @@ def problematique():
     images = dataset.ImageDataset("data/image_dataset/")
     SHOW_PLOTS = True
     features, feature_names = etape1_representation(images)
-    representation, pca_model = etape2_pretraitement(features, feature_names=feature_names, labels=images.labels)
+    representation = etape2_pretraitement(features, feature_names=feature_names, labels=images.labels)
     err_bayes = etape3_classificateur_bayesien(representation,feature_names=feature_names)
     err_knn = etape4_classificateur_knn(representation, feature_names=feature_names)
-    err_rna, rna_model = etape5_classificateur_rna(representation, feature_names=feature_names)
+    err_rna = etape5_classificateur_rna(representation, feature_names=feature_names)
     resultats = {
         "Bayésien": err_bayes,
         "K-PPV (KNN)": err_knn,

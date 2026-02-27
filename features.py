@@ -113,7 +113,7 @@ def calculate_ratio_symmetry(rgb_images_data:Dataset) -> np.ndarray:
         symmetry_levels[i] = np.mean(np.abs(grayscale_image - flipped_image))
     return symmetry_levels
 
-def calculate_lab_b_peaks(rgb_images_data:Dataset) -> np.ndarray:
+def calculate_lab_peaks(rgb_images_data:Dataset) -> np.ndarray:
     """
     Calculate the number of peaks in the Lab color space's b channel for each image in the dataset.
 
@@ -122,14 +122,17 @@ def calculate_lab_b_peaks(rgb_images_data:Dataset) -> np.ndarray:
     Returns:
         np.ndarray: A 1D array of shape (num_images,) containing the number of peaks in the Lab color space's b channel for each image.
     """
-    spike_widths = np.zeros(len(rgb_images_data))
+    spike_widths = np.zeros((len(rgb_images_data),3))
     for i, (image, _) in enumerate(rgb_images_data):
         # Convert RGB to Lab color space
         image_lab = skimage.color.rgb2lab(image / 255.0)
         scaled_lab = analysis.rescale_lab(image_lab, n_bins=256)
+        
+        peaks_l, _ = find_peaks(scaled_lab[:, :, 0].flatten())
+        preaks_a, _ = find_peaks(scaled_lab[:, :, 1].flatten())
         peaks_b, _ = find_peaks(scaled_lab[:, :, 2].flatten())
 
-        spike_widths[i] = len(peaks_b)
+        spike_widths[i] = [len(peaks_l), len(preaks_a), len(peaks_b)]
 
     return spike_widths
 
