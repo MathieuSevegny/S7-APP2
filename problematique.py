@@ -185,12 +185,9 @@ def etape4_classificateur_knn(representation: dataset.Representation, feature_na
     if show_plots:
         viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=True, title="Matrice de confusion du classificateur KNN")
     print("\n")
-    utils.get_impact_each_features_pred(knn, representation.data, representation.labels, representation.unique_labels, feature_names)
+    classifier_utils.get_impact_each_features_pred(knn, representation.data, representation.labels, representation.unique_labels, feature_names)
     error_index = np.where(predictions != representation.labels)[0]
     return error_rate, error_index, predictions
-
-
-
 
 def etape5_classificateur_rna(representation: dataset.Representation, show_plots: bool = True, feature_names: list = None):
     """
@@ -227,7 +224,7 @@ def etape5_classificateur_rna(representation: dataset.Representation, show_plots
     if show_plots:
         viz.show_confusion_matrix(representation.labels, predictions_labels, representation.unique_labels, plot=True, title="Matrice de confusion du classificateur RNA")
     print("\n")
-    utils.get_impact_each_features_pred(nn_classifier, representation.data, representation.labels, representation.unique_labels, feature_names)
+    classifier_utils.get_impact_each_features_pred(nn_classifier, representation.data, representation.labels, representation.unique_labels, feature_names)
     return error_rate
 
 def etape6_discussion_et_justifications(resultats: dict, show_plots: bool = True):

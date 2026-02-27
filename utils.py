@@ -1,4 +1,9 @@
+import copy
+
 import numpy as np
+from sklearn.model_selection import train_test_split
+
+from helpers import analysis, classifier, dataset
 
 def one_hot_for_labels(labels:np.ndarray, unique_labels:list) -> np.ndarray:
     number_of_classes = len(unique_labels)
@@ -15,7 +20,6 @@ def get_best_parameters_knn(representation: dataset.Representation) -> dict:
     X_train, X_test, y_train, y_test = train_test_split(
         representation.data, representation.labels, test_size=0.2, random_state=42
     )
-    
     rep_train = copy.copy(representation)
     rep_train.data = X_train
     rep_train.labels = y_train
