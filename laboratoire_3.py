@@ -37,7 +37,7 @@ def exercice_1_modele_gaussiens():
 
     # L3.E1.3 Superposer sur le graphique des classes les frontières calculées dans l'exercice préparatoire.
     # -------------------------------------------------------------------------
-    viz.plot_data_distribution(representation, show_ellipses=False, analytical_boundaries=False)
+    viz.plot_data_distribution(representation, show_ellipses=True, analytical_boundaries=True, title="Distribution des classes avec frontières analytiques et ellipses 1σ")
     # -------------------------------------------------------------------------
     # =========================================================================
 
@@ -60,23 +60,23 @@ def exercice_2_classificateur_ppv():
 
     viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=False)
 
-    viz.plot_classification_errors(representation, predictions)
-    viz.plot_numerical_decision_regions(knn_classifier, representation)
+    viz.plot_classification_errors(representation, predictions, title="Erreurs de classification du 1-PPV")
+    viz.plot_numerical_decision_regions(knn_classifier, representation, title="Frontières de décision du 1-PPV")
     # -------------------------------------------------------------------------
 
     # L3.E2.3 et L3.E2.4 Générer un seul représentant pour chaque classe au moyen de l'algorithme des k-moyennes
     # (Complétez la classe helpers.classifier.KNNClassifier)
     # -------------------------------------------------------------------------
-    knn_classifier = classifier.KNNClassifier(n_neighbors=1, use_kmeans=True, n_representatives=1)
+    knn_classifier = classifier.KNNClassifier(n_neighbors=1, use_kmeans=True, n_representatives=7)
     knn_classifier.fit(representation)
     predictions = knn_classifier.predict(representation.data)
 
     error_rate, error_indices = analysis.compute_error_rate(representation.labels, predictions)
     print(f"\n\n{len(error_indices)} erreur de classification sur {len(representation.labels)} échantillons ({error_rate * 100:.2f} %)")
 
-    viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=False)
-    viz.plot_classification_errors(representation, predictions)
-    viz.plot_numerical_decision_regions(knn_classifier, representation)
+    viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=False, title="Matrice de confusion du 1-PPV avec k-moyennes")
+    viz.plot_classification_errors(representation, predictions, title="Erreurs de classification du 1-PPV avec k-moyennes")
+    viz.plot_numerical_decision_regions(knn_classifier, representation, title="Frontières de décision du 1-PPV avec k-moyennes")
     # -------------------------------------------------------------------------
 
     plt.show()
@@ -98,9 +98,9 @@ def exercice_3_classificateur_bayesien():
     error_rate, error_indices = analysis.compute_error_rate(representation.labels, predictions)
     print(f"\n\n{len(error_indices)} erreur de classification sur {len(representation.labels)} échantillons ({error_rate * 100:.2f} %)")
 
-    viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=False)
-    viz.plot_classification_errors(representation, predictions)
-    viz.plot_numerical_decision_regions(bayes_classifier, representation)
+    viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=False, title="Matrice de confusion du classificateur bayésien")
+    viz.plot_classification_errors(representation, predictions, title="Erreurs de classification du classificateur bayésien")
+    viz.plot_numerical_decision_regions(bayes_classifier, representation, title="Frontières de décision du classificateur bayésien")
     # -------------------------------------------------------------------------
 
     plt.show()
@@ -124,9 +124,9 @@ def exercice_s1_classificateur_bayesien_complet():
     error_rate, error_indices = analysis.compute_error_rate(representation.labels, predictions)
     print(f"\n\n{len(error_indices)} erreur de classification sur {len(representation.labels)} échantillons ({error_rate * 100:.2f} %)")
 
-    viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=False)
-    viz.plot_classification_errors(representation, predictions)
-    viz.plot_numerical_decision_regions(bayes_classifier_hist, representation)
+    viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=False, title="Matrice de confusion du classificateur bayésien avec aprioris")
+    viz.plot_classification_errors(representation, predictions, title="Erreurs du classification bayésien avec aprioris")
+    viz.plot_numerical_decision_regions(bayes_classifier_hist, representation, title="Frontières de décision du classificateur bayésien avec aprioris")
     # -------------------------------------------------------------------------
 
     plt.show()
@@ -156,9 +156,9 @@ def exercice_s2_pdf_arbitraire():
     error_rate, error_indices = analysis.compute_error_rate(representation.labels, predictions)
     print(f"\n\n{len(error_indices)} erreur de classification sur {len(representation.labels)} échantillons ({error_rate * 100:.2f} %)")
 
-    viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=False)
-    viz.plot_classification_errors(representation, predictions)
-    viz.plot_numerical_decision_regions(bayes_classifier_hist, representation)
+    viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=False, title="Matrice de confusion du classificateur bayésien avec aprioris")
+    viz.plot_classification_errors(representation, predictions, title="Erreurs du classificateur bayésien avec aprioris")
+    viz.plot_numerical_decision_regions(bayes_classifier_hist, representation, title="Frontières de décision du classificateur bayésien avec aprioris")
     # -------------------------------------------------------------------------
 
     plt.show()
@@ -167,10 +167,10 @@ def exercice_s2_pdf_arbitraire():
 def main():
     # pylint: disable = using-constant-test, multiple-statements
 
-    if True: exercice_1_modele_gaussiens()
-    if True: exercice_2_classificateur_ppv()
-    if True: exercice_3_classificateur_bayesien()
-    if True: exercice_s1_classificateur_bayesien_complet()
+    # if True: exercice_1_modele_gaussiens()
+    # if True: exercice_2_classificateur_ppv()
+    # if True: exercice_3_classificateur_bayesien()
+    # if True: exercice_s1_classificateur_bayesien_complet()
     if True: exercice_s2_pdf_arbitraire()
 
 

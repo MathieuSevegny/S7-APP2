@@ -4,6 +4,7 @@ import pathlib
 
 import numpy
 
+import classifier_utils
 import utils
 
 
@@ -25,7 +26,7 @@ from sklearn.model_selection import train_test_split
 import copy
 
 
-def etape1_representation(images: dataset.ImageDataset, show_plots: bool = True) -> np.ndarray:
+def etape1_representation(images: dataset.ImageDataset, show_plots: bool = False) -> np.ndarray:
     print("--- Étape 1 : Représentation ---")
     noise_feature = calculate_noise(images).reshape(-1, 1)
     ratio_vertical_horizontal = calculate_ratio_vertical_horizontal(images).reshape(-1, 1)
@@ -171,12 +172,12 @@ def etape3_classificateur_bayesien(representation: dataset.Representation, featu
         viz.show_confusion_matrix(representation.labels, predictions_labels, representation.unique_labels, plot=True, title="Matrice de confusion du classificateur Bayésien")
     print("\n")
     
-    utils.get_impact_each_features_pred(bayes, representation.data, representation.labels, representation.unique_labels, feature_names)
+    classifier_utils.get_impact_each_features_pred(bayes, representation.data, representation.labels, representation.unique_labels, feature_names)
     return error_rate
 
 def etape4_classificateur_knn(representation: dataset.Representation, feature_names: list, show_plots: bool = True):
     print("--- Étape 4 : Entraînement et évaluation du Classificateur k-moy, k-PPV ---")
-    best_params = utils.get_best_parameters_knn(representation)
+    best_params = classifier_utils.get_best_parameters_knn(representation)
     knn = classifier.KNNClassifier(n_neighbors=best_params['k'], use_kmeans=best_params['use_kmeans'], n_representatives=best_params['n_representatives'])
     knn.fit(representation)
     predictions = knn.predict(representation.data)
@@ -196,15 +197,18 @@ def etape5_classificateur_rna(representation: dataset.Representation, show_plots
     Étape 5 : Entraînement et évaluation du Réseau de Neurones Artificiels.
     """
     print("--- Étape 5 : Classificateur RNA ---")
+    print("\n--- Entraînement du modèle final avec les meilleurs paramètres ---")
     nn_classifier = classifier.NeuralNetworkClassifier(
         input_dim=representation.dim,
         output_dim=len(representation.unique_labels),
         n_hidden=3,
         n_neurons=5,
+        activation="tanh",
         lr=0.001,
-        n_epochs=70,
+        n_epochs=45, 
         batch_size=16
     )
+
     nn_classifier.fit(representation)
     save_dir = pathlib.Path(__file__).parent / "saves"
     save_dir.mkdir(parents=True, exist_ok=True)
@@ -273,4 +277,4 @@ def problematique():
         plt.show(block=True)
 
 if __name__ == "__main__":
-    problematique()
+     problematique()
