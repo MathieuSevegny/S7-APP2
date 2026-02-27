@@ -36,7 +36,6 @@ def etape1_representation(images: dataset.ImageDataset, show_plots: bool = True)
     ratio_high_low_freq = calculate_ratio_high_low_frequency(images).reshape(-1, 1)
     ratio_symmetry = calculate_ratio_symmetry(images).reshape(-1, 1)
     
-    
     features = np.hstack((noise_feature, number_lab_peaks[:,[2]], ecart_type[:,[0]], ratio_vertical_horizontal))
     feature_names = [
             "Bruit",
@@ -110,7 +109,6 @@ def etape1_representation(images: dataset.ImageDataset, show_plots: bool = True)
                                         ylabel="Nombre d'images",
                                         n_bins=32,
                                         features_names=["Ratio de symétrie"])
-        
         subrepresentation = dataset.Representation(data=features[:, 0:3], labels=images.labels)
         viz.plot_data_distribution(subrepresentation,
                             title="Distribution des 3 premières features",
@@ -187,7 +185,8 @@ def etape4_classificateur_knn(representation: dataset.Representation, feature_na
         viz.show_confusion_matrix(representation.labels, predictions, representation.unique_labels, plot=True, title="Matrice de confusion du classificateur KNN")
     print("\n")
     utils.get_impact_each_features_pred(knn, representation.data, representation.labels, representation.unique_labels, feature_names)
-    return error_rate
+    error_index = np.where(predictions != representation.labels)[0]
+    return error_rate, error_index, predictions
 
 
 
@@ -234,6 +233,22 @@ def etape6_discussion_et_justifications(resultats: dict, show_plots: bool = True
         for nom, erreur in resultats.items():
             print(f"- {nom} : {erreur * 100:.2f}% d'erreur")
         plt.show(block=True)
+        
+def show_errors(indexes_errors: np.ndarray, predictions: list[str], images: dataset.ImageDataset):
+    if len(indexes_errors) == 0:
+        print("Aucune erreur de classification à afficher.")
+        return
+    
+    print(f"Affichage de {len(indexes_errors)} erreurs de classification...")
+    for idx in indexes_errors:
+        image_path = images.images[idx]
+        image = plt.imread(image_path)
+        label = images.labels[idx]
+        plt.figure(figsize=(4, 4))
+        plt.imshow(image)
+        plt.title(f"Image index {idx} - Label: {label} - Pred: {predictions[idx]}")
+        plt.axis('off')
+        plt.show(block=True)
     
 def problematique():
     images = dataset.ImageDataset("data/image_dataset/")
@@ -241,7 +256,7 @@ def problematique():
     features, feature_names = etape1_representation(images)
     representation = etape2_pretraitement(features, feature_names=feature_names, labels=images.labels,use_pca=True)
     err_bayes = etape3_classificateur_bayesien(representation,feature_names=feature_names)
-    err_knn = etape4_classificateur_knn(representation, feature_names=feature_names)
+    err_knn, err_index, predictions = etape4_classificateur_knn(representation, feature_names=feature_names)
     err_rna = etape5_classificateur_rna(representation, feature_names=feature_names)
     resultats = {
         "Bayésien": err_bayes,
@@ -249,6 +264,9 @@ def problematique():
         "RNA": err_rna
     }
     etape6_discussion_et_justifications(resultats)
+    
+    # Affichage des erreurs de classification du KNN
+    if False: show_errors(err_index, predictions, images)
 
     if SHOW_PLOTS:
         print("\nAffichage des figures (Fermez les fenêtres pour terminer le script)...")

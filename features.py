@@ -1,6 +1,7 @@
 from matplotlib import pyplot as plt
 import numpy as np
 import skimage
+from skimage import color
 from skimage.filters import sobel
 
 from helpers import analysis
@@ -142,3 +143,27 @@ def calculate_std_dev(images):
     for i, (image, _) in enumerate(images):
         std_features[i] = np.std(image, axis=(0, 1))
     return std_features
+
+def calculate_green_blue_proportions(images):
+    """
+    Calcule la proportion de pixels verts et bleus pour chaque image.
+    Retourne un tableau numpy de dimension (N, 2) avec [pourcentage_vert, pourcentage_bleu].
+    """
+    proportions = []
+    for i, (image, _) in enumerate(images):
+        # 1. Convertir l'image RGB en HSV
+        hsv_img = color.rgb2hsv(image)
+        # Le canal Teinte (Hue) est le canal 0. Ses valeurs vont de 0 à 1 dans skimage.
+        teinte = hsv_img[:, :, 0]
+        saturation = hsv_img[:, :, 1]
+        # 2. Définir les plages de couleurs (approximations standards)
+        # Vert : Teinte autour de 0.33 (entre 0.20 et 0.45)
+        masque_vert = (teinte >= 0.20) & (teinte <= 0.45) & (saturation > 0.2)
+        # Bleu : Teinte autour de 0.66 (entre 0.55 et 0.75)
+        masque_bleu = (teinte >= 0.55) & (teinte <= 0.75) & (saturation > 0.2)
+        # 3. Calculer le pourcentage de pixels pour chaque couleur
+        total_pixels = image.shape[0] * image.shape[1]
+        pourcentage_vert = np.sum(masque_vert) / total_pixels
+        pourcentage_bleu = np.sum(masque_bleu) / total_pixels
+        proportions.append([pourcentage_vert, pourcentage_bleu])
+    return np.array(proportions)
