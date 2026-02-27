@@ -51,7 +51,7 @@ def etape1_representation(images: dataset.ImageDataset, show_plots: bool = True)
     
     if show_plots:
 
-        spickes_representation = dataset.Representation(data=ecart_type, labels=images.labels)
+        spickes_representation = dataset.Representation(data=number_lab_peaks, labels=images.labels)
         viz.plot_features_distribution(spickes_representation, 
                                    title="Distribution du nombre de pics dans les canaux Lab", 
                                    xlabel="Nombre de pics dans le canal Lab", 
@@ -151,8 +151,8 @@ def etape2_pretraitement(features: np.ndarray, feature_names: list, labels: np.n
         plt.figure(figsize=(8, 6))
         plt.imshow(correlations_apres, cmap='coolwarm', vmin=-1, vmax=1)
         plt.colorbar(label="Coefficient de corrélation (Pearson)")
-        plt.xticks(ticks=numpy.arange(len(feature_names)), labels=feature_names, rotation=45, ha='right')
-        plt.yticks(ticks=numpy.arange(len(feature_names)), labels=feature_names)
+        plt.xticks(ticks=numpy.arange(len(feature_names)), labels=[f"Composante {i}" for i in range(len(feature_names))], rotation=45, ha='right')
+        plt.yticks(ticks=numpy.arange(len(feature_names)), labels=[f"Composante {i}" for i in range(len(feature_names))])
         plt.title("Matrice de corrélation APRÈS PCA (Décorrélation)")
         plt.tight_layout()
         plt.show(block=True)

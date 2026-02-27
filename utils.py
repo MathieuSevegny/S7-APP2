@@ -46,9 +46,6 @@ def get_impact_each_features_pred(classifier: Classifier, features:np.ndarray, l
         
 
 def get_best_parameters_knn(representation: dataset.Representation) -> dict:
-  
-   
-    
     X_train, X_test, y_train, y_test = train_test_split(
         representation.data, representation.labels, test_size=0.2, random_state=42
     )
@@ -75,7 +72,6 @@ def get_best_parameters_knn(representation: dataset.Representation) -> dict:
             knn.fit(rep_train)
             predictions = knn.predict(X_test)
             erreur, _ = analysis.compute_error_rate(y_test, predictions)
-            
          
             if use_km:
                 print(f"Test : K={k}, K-Means=Oui, Représentants={n_rep} --> Erreur : {erreur * 100:.2f}%")
