@@ -201,7 +201,7 @@ def etape5_classificateur_rna(representation: dataset.Representation, show_plots
         input_dim=representation.dim,
         output_dim=len(representation.unique_labels),
         n_hidden=3,
-        n_neurons=8,
+        n_neurons=5,
         lr=0.001,
         n_epochs=70,
         batch_size=16
