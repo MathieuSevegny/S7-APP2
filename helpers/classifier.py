@@ -279,7 +279,7 @@ class NeuralNetworkClassifier(Classifier):
     model: Optional[keras.models.Model]
     history: Optional[keras.callbacks.History]
 
-    def __init__(self, input_dim: int, output_dim: int, n_hidden:int=2, n_neurons:int=2, lr:float=0.01, n_epochs:int=1000, batch_size:int=16):
+    def __init__(self, input_dim: int, output_dim: int, n_hidden:int=2, n_neurons:int=2, lr:float=0.01, n_epochs:int=1000, batch_size:int=16,  activation:str="relu"):
         """
         Args:
             input_dim: Dimension des données d'entrée.
@@ -292,7 +292,7 @@ class NeuralNetworkClassifier(Classifier):
         """
         self.n_hidden = n_hidden
         self.n_neurons = n_neurons
-
+        self.activation = activation
         self.lr = lr
         self.n_epochs = n_epochs
         self.batch_size = batch_size
@@ -308,7 +308,7 @@ class NeuralNetworkClassifier(Classifier):
         self.model = keras.models.Sequential()
         self.model.add(keras.layers.InputLayer(shape=(input_dim,)))
         for _ in range(self.n_hidden - 1):
-            self.model.add(keras.layers.Dense(units=self.n_neurons, activation="tanh"))
+            self.model.add(keras.layers.Dense(units=self.n_neurons, activation= self.activation))
         self.model.add(keras.layers.Dense(units=output_dim, activation="softmax"))
         # -------------------------------------------------------------------------
 

@@ -26,7 +26,7 @@ from sklearn.model_selection import train_test_split
 import copy
 
 
-def etape1_representation(images: dataset.ImageDataset, show_plots: bool = True) -> np.ndarray:
+def etape1_representation(images: dataset.ImageDataset, show_plots: bool = False) -> np.ndarray:
     print("--- Étape 1 : Représentation ---")
     noise_feature = calculate_noise(images).reshape(-1, 1)
     ratio_vertical_horizontal = calculate_ratio_vertical_horizontal(images).reshape(-1, 1)
@@ -157,15 +157,18 @@ def etape5_classificateur_rna(representation: dataset.Representation, show_plots
     Étape 5 : Entraînement et évaluation du Réseau de Neurones Artificiels.
     """
     print("--- Étape 5 : Classificateur RNA ---")
+    print("\n--- Entraînement du modèle final avec les meilleurs paramètres ---")
     nn_classifier = classifier.NeuralNetworkClassifier(
         input_dim=representation.dim,
         output_dim=len(representation.unique_labels),
         n_hidden=3,
-        n_neurons=8,
+        n_neurons=5,
+        activation="tanh",
         lr=0.001,
-        n_epochs=70,
+        n_epochs=70, 
         batch_size=16
     )
+
     nn_classifier.fit(representation)
     save_dir = pathlib.Path(__file__).parent / "saves"
     save_dir.mkdir(parents=True, exist_ok=True)

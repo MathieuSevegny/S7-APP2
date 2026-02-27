@@ -42,7 +42,7 @@ def get_best_parameters_knn(representation: dataset.Representation) -> dict:
     rep_train.labels = y_train
 
     valeurs_k = [1, 3, 5, 7, 9, 11]
-    valeurs_representants = [None, 5, 10, 15, 20] 
+    valeurs_representants = [None,2,3,4,5,6,7,8,9,10] 
     
     meilleure_erreur = float('inf')
     meilleurs_params = {}
@@ -73,5 +73,75 @@ def get_best_parameters_knn(representation: dataset.Representation) -> dict:
 
     print(f"\nMeilleurs paramètres trouvés : K={meilleurs_params['k']}, K-Means={meilleurs_params['use_kmeans']}, Représentants={meilleurs_params['n_representatives']}")
     print(f"   Avec un taux d'erreur de validation de : {meilleure_erreur * 100:.2f}%\n")
+    
+    return meilleurs_params
+
+
+
+
+
+def recherche_hyperparametres_rna(representation, liste_couches, liste_neurones, liste_activations):
+    """
+    Fonction indépendante qui teste plusieurs architectures de RNA (Grid Search).
+    Retourne un dictionnaire avec les meilleurs hyperparamètres et sauvegarde l'historique en Excel.
+    """
+    # couches = [4]
+    # neurones = [4,5,6,7, 8, 16]
+    # activations = ["relu", "tanh", "sigmoid"]
+    # best_params = classifier_utils.recherche_hyperparametres_rna(representation, couches, neurones, activations)
+    import itertools
+    import pandas as pd
+    print("\n--- Début de la recherche par grille (Grid Search) ---")
+    meilleur_taux_erreur = float('inf')
+    meilleurs_params = {}
+    
+    historique_resultats = []
+    
+    for n_hidden, n_neurons, activation in itertools.product(liste_couches, liste_neurones, liste_activations):
+        print(f"Test -> Couches: {n_hidden} | Neurones: {n_neurons} | Activation: '{activation}'")
+
+        nn_test = classifier.NeuralNetworkClassifier(
+            input_dim=representation.dim,
+            output_dim=len(representation.unique_labels),
+            n_hidden=n_hidden,
+            n_neurons=n_neurons,
+            activation=activation,
+            lr=0.001,
+            n_epochs=30, 
+            batch_size=16
+        )
+        
+        nn_test.fit(representation)
+        data_preprocessed = nn_test.preprocess_data(representation.data)
+        predictions = nn_test.predict(data_preprocessed)
+        predictions_labels = np.array([representation.unique_labels[i] for i in predictions])
+        
+        error_rate, _ = analysis.compute_error_rate(representation.labels, predictions_labels)
+        print(f"   => Taux d'erreur : {error_rate * 100:.2f}%\n")
+        
+        historique_resultats.append({
+            "Nb de couches cachées": n_hidden,
+            "Neurones par couche": n_neurons,
+            "Fonction d'activation": activation,
+            "Taux d'erreur (%)": round(error_rate * 100, 2)
+        })
+        
+        if error_rate < meilleur_taux_erreur:
+            meilleur_taux_erreur = error_rate
+            meilleurs_params = {
+                "n_hidden": n_hidden,
+                "n_neurons": n_neurons,
+                "activation": activation
+            }
+
+
+    df_resultats = pd.DataFrame(historique_resultats)
+    df_resultats = df_resultats.sort_values(by="Taux d'erreur (%)") 
+    
+    nom_fichier = "historique_grid_search_rna.xlsx"
+    df_resultats.to_excel(nom_fichier, index=False)
+    
+    print(f"Historique des tests sauvegardé avec succès dans le fichier : '{nom_fichier}'")
+    print(f"Meilleurs paramètres trouvés : {meilleurs_params} avec {meilleur_taux_erreur * 100:.2f}% d'erreur")
     
     return meilleurs_params
