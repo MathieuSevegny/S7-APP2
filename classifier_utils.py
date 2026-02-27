@@ -91,7 +91,7 @@ def recherche_hyperparametres_rna(representation, liste_couches, liste_neurones,
     # best_params = classifier_utils.recherche_hyperparametres_rna(representation, couches, neurones, activations)
     import itertools
     import pandas as pd
-    print("\n--- Début de la recherche par grille (Grid Search) ---")
+  
     meilleur_taux_erreur = float('inf')
     meilleurs_params = {}
     
@@ -141,7 +141,6 @@ def recherche_hyperparametres_rna(representation, liste_couches, liste_neurones,
     nom_fichier = "historique_grid_search_rna.xlsx"
     df_resultats.to_excel(nom_fichier, index=False)
     
-    print(f"Historique des tests sauvegardé avec succès dans le fichier : '{nom_fichier}'")
     print(f"Meilleurs paramètres trouvés : {meilleurs_params} avec {meilleur_taux_erreur * 100:.2f}% d'erreur")
     
     return meilleurs_params
