@@ -37,22 +37,12 @@ def etape1_representation(images: dataset.ImageDataset, show_plots: bool = True)
     ratio_symmetry = calculate_ratio_symmetry(images).reshape(-1, 1)
     
     
-    features = np.hstack((noise_feature, number_lab_peaks, ecart_type, ratio_vertical_horizontal, contrast, most_common_color_top_left, ratio_high_low_freq, ratio_symmetry))
+    features = np.hstack((noise_feature, number_lab_peaks[:,[2]], ecart_type[:,[0]], ratio_vertical_horizontal))
     feature_names = [
             "Bruit",
-            "Pics Lab(L)",
-            "Pics Lab(a)",
             "Pics Lab(b)",
             "Écart R",
-            "Écart G",
-            "Écart B",
             "Ratio Vert/Horiz",
-            "Contraste",
-            "Couleur R Top-Gauche",
-            "Couleur G Top-Gauche",
-            "Couleur B Top-Gauche",
-            "Ratio Haut/Bas Fréquence",
-            "Ratio Symétrie"
         ]
     
     assert len(feature_names) == features.shape[1], f"Le nombre de noms de features doit correspondre au nombre de features extraites. Actuellement, {len(feature_names)} noms pour {features.shape[1]} features."
@@ -113,6 +103,14 @@ def etape1_representation(images: dataset.ImageDataset, show_plots: bool = True)
                                       n_bins=32,
                                       features_names=["Ratio haut/bas fréquence"])
         
+        ratio_symmetry_representation = dataset.Representation(data=ratio_symmetry, labels=images.labels)
+        viz.plot_features_distribution(ratio_symmetry_representation,
+                                        title="Distribution du ratio de symétrie", 
+                                        xlabel="Ratio de symétrie", 
+                                        ylabel="Nombre d'images",
+                                        n_bins=32,
+                                        features_names=["Ratio de symétrie"])
+        
         subrepresentation = dataset.Representation(data=features[:, 0:3], labels=images.labels)
         viz.plot_data_distribution(subrepresentation,
                             title="Distribution des 3 premières features",
@@ -122,7 +120,7 @@ def etape1_representation(images: dataset.ImageDataset, show_plots: bool = True)
         plt.show(block=True)
     return features, feature_names
 
-def etape2_pretraitement(features: np.ndarray, feature_names: list, labels: np.ndarray, show_plots: bool = True) -> dataset.Representation:
+def etape2_pretraitement(features: np.ndarray, feature_names: list, labels: np.ndarray, show_plots: bool = True, use_pca : bool = True) -> dataset.Representation:
     print("--- Étape 2 : Prétraitement avec Normalisation et réduction de dimensionnalité (PCA)---")
     scaler = StandardScaler()
     normalized_features = scaler.fit_transform(features)
@@ -137,9 +135,12 @@ def etape2_pretraitement(features: np.ndarray, feature_names: list, labels: np.n
         plt.tight_layout()
         plt.show(block=True)
     
-    return dataset.Representation(data=normalized_features, labels=labels)
-    #pca = PCA(n_components=min(15, normalized_features.shape[1]))
-    #pca_features = pca.fit_transform(normalized_features)
+    if not use_pca:
+        representation = dataset.Representation(data=normalized_features, labels=labels)
+        return representation
+    
+    pca = PCA(n_components=min(10, normalized_features.shape[1]))
+    pca_features = pca.fit_transform(normalized_features)
     
     print("\n--- Analyse en Composantes Principales (PCA) ---")
     print(f"Variance expliquée : {numpy.round(pca.explained_variance_ratio_ * 100, 2)}")
@@ -156,7 +157,7 @@ def etape2_pretraitement(features: np.ndarray, feature_names: list, labels: np.n
         plt.tight_layout()
         plt.show(block=True)
     representation = dataset.Representation(data=pca_features, labels=labels)
-    return representation,pca
+    return representation
 
 def etape3_classificateur_bayesien(representation: dataset.Representation, feature_names: list, show_plots: bool = True):
     print("--- Étape 3 :Entraînement et évaluation du Classificateur Bayésien ---")
@@ -238,7 +239,7 @@ def problematique():
     images = dataset.ImageDataset("data/image_dataset/")
     SHOW_PLOTS = True
     features, feature_names = etape1_representation(images)
-    representation = etape2_pretraitement(features, feature_names=feature_names, labels=images.labels)
+    representation = etape2_pretraitement(features, feature_names=feature_names, labels=images.labels,use_pca=True)
     err_bayes = etape3_classificateur_bayesien(representation,feature_names=feature_names)
     err_knn = etape4_classificateur_knn(representation, feature_names=feature_names)
     err_rna = etape5_classificateur_rna(representation, feature_names=feature_names)
