@@ -1,6 +1,7 @@
 from matplotlib import pyplot as plt
 import numpy as np
 import skimage
+from skimage import color
 from skimage.filters import sobel
 
 from helpers import analysis
@@ -113,7 +114,7 @@ def calculate_ratio_symmetry(rgb_images_data:Dataset) -> np.ndarray:
         symmetry_levels[i] = np.mean(np.abs(grayscale_image - flipped_image))
     return symmetry_levels
 
-def calculate_lab_b_peaks(rgb_images_data:Dataset) -> np.ndarray:
+def calculate_lab_peaks(rgb_images_data:Dataset) -> np.ndarray:
     """
     Calculate the number of peaks in the Lab color space's b channel for each image in the dataset.
 
@@ -122,14 +123,17 @@ def calculate_lab_b_peaks(rgb_images_data:Dataset) -> np.ndarray:
     Returns:
         np.ndarray: A 1D array of shape (num_images,) containing the number of peaks in the Lab color space's b channel for each image.
     """
-    spike_widths = np.zeros(len(rgb_images_data))
+    spike_widths = np.zeros((len(rgb_images_data),3))
     for i, (image, _) in enumerate(rgb_images_data):
         # Convert RGB to Lab color space
         image_lab = skimage.color.rgb2lab(image / 255.0)
         scaled_lab = analysis.rescale_lab(image_lab, n_bins=256)
+        
+        peaks_l, _ = find_peaks(scaled_lab[:, :, 0].flatten())
+        preaks_a, _ = find_peaks(scaled_lab[:, :, 1].flatten())
         peaks_b, _ = find_peaks(scaled_lab[:, :, 2].flatten())
 
-        spike_widths[i] = len(peaks_b)
+        spike_widths[i] = [len(peaks_l), len(preaks_a), len(peaks_b)]
 
     return spike_widths
 
@@ -139,3 +143,27 @@ def calculate_std_dev(images):
     for i, (image, _) in enumerate(images):
         std_features[i] = np.std(image, axis=(0, 1))
     return std_features
+
+def calculate_green_blue_proportions(images):
+    """
+    Calcule la proportion de pixels verts et bleus pour chaque image.
+    Retourne un tableau numpy de dimension (N, 2) avec [pourcentage_vert, pourcentage_bleu].
+    """
+    proportions = []
+    for i, (image, _) in enumerate(images):
+        # 1. Convertir l'image RGB en HSV
+        hsv_img = color.rgb2hsv(image)
+        # Le canal Teinte (Hue) est le canal 0. Ses valeurs vont de 0 à 1 dans skimage.
+        teinte = hsv_img[:, :, 0]
+        saturation = hsv_img[:, :, 1]
+        # 2. Définir les plages de couleurs (approximations standards)
+        # Vert : Teinte autour de 0.33 (entre 0.20 et 0.45)
+        masque_vert = (teinte >= 0.20) & (teinte <= 0.45) & (saturation > 0.2)
+        # Bleu : Teinte autour de 0.66 (entre 0.55 et 0.75)
+        masque_bleu = (teinte >= 0.55) & (teinte <= 0.75) & (saturation > 0.2)
+        # 3. Calculer le pourcentage de pixels pour chaque couleur
+        total_pixels = image.shape[0] * image.shape[1]
+        pourcentage_vert = np.sum(masque_vert) / total_pixels
+        pourcentage_bleu = np.sum(masque_bleu) / total_pixels
+        proportions.append([pourcentage_vert, pourcentage_bleu])
+    return np.array(proportions)

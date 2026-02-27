@@ -218,7 +218,7 @@ class Representation(Dataset):
             data (numpy.ndarray): Les données du dataset.
             labels (numpy.ndarray): Les labels associés aux données.
         """
-        assert data.shape[-1] <= 10, "Vous êtes contraint à 10 dimensions ou moins pour la problématique."
+        #assert data.shape[-1] <= 10, "Vous êtes contraint à 10 dimensions ou moins pour la problématique."
         assert data.shape[0] == labels.shape[0], "Data and labels must have the same number of samples."
 
         super().__init__(path="")
