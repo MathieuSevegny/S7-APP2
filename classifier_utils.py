@@ -91,7 +91,7 @@ def recherche_hyperparametres_rna(representation, liste_couches, liste_neurones,
     # best_params = classifier_utils.recherche_hyperparametres_rna(representation, couches, neurones, activations)
     import itertools
     import pandas as pd
-  
+
     meilleur_taux_erreur = float('inf')
     meilleurs_params = {}
     
